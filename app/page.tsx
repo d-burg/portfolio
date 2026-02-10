@@ -40,12 +40,12 @@ const customStyles = `
     -webkit-backdrop-filter: blur(12px);
     
     /* MOBILE DEFAULT: Vertical Gradient 
-       Top 35% is transparent (Shows Video)
+       Top 45% is transparent (Shows Video)
        Bottom 65% is Solid (Hides Text) 
     */
     background: linear-gradient(to bottom, 
       rgba(250, 250, 249, 0.4) 0%, 
-      rgba(250, 250, 249, 0.4) 35%, 
+      rgba(250, 250, 249, 0.4) 45%, 
       #fafaf9 35.1%, 
       #fafaf9 100%
     );
@@ -132,7 +132,7 @@ export default function Portfolio() {
         <div className="h-full w-full flex flex-col md:grid md:grid-cols-2 animate-fade-in-delayed">
           
           {/* A. MOBILE VIDEO (Top 35% height - Matches CSS Mask) */}
-          <div className="block md:hidden w-full h-[35vh] relative overflow-hidden bg-stone-100">
+          <div className="block md:hidden w-full h-[35vh] mt-[10vh] relative overflow-hidden bg-stone-100">
              <video 
                 autoPlay 
                 loop 
@@ -148,7 +148,7 @@ export default function Portfolio() {
               - Mobile: Bottom 65% height
               - Desktop: Full height, Left column
           */}
-          <div className="h-[65vh] md:h-full flex flex-col justify-center z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
+          <div className="h-[55vh] md:h-full flex flex-col justify-center pb-[10vh] z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
             <div className="space-y-6 md:space-y-8 max-w-xl">
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-stone-900">
                 Hi, I'm Daniel.
