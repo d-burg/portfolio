@@ -1,7 +1,7 @@
 import React from 'react';
 import { Github, Linkedin, Mail, FileText, ChevronDown, GraduationCap, MapPin, User, Code } from 'lucide-react';
 
-// --- CUSTOM ANIMATIONS (CSS) ---
+// --- CUSTOM ANIMATIONS & RESPONSIVE GRADIENTS ---
 const customStyles = `
   @keyframes drawRect {
     0% { stroke-dashoffset: 10000; }
@@ -31,6 +31,40 @@ const customStyles = `
     opacity: 0;
     animation: fadeIn 4s ease-out forwards;
     animation-delay: 1s;
+  }
+
+  /* --- RESPONSIVE GLASS MASKS --- */
+  /* This class handles the "Smart Masking" for both Mobile and Desktop */
+  .smart-glass-panel {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    /* MOBILE DEFAULT: Vertical Gradient 
+       Top 35% is transparent (Shows Video)
+       Bottom 65% is Solid (Hides Text) 
+    */
+    background: linear-gradient(to bottom, 
+      rgba(250, 250, 249, 0.4) 0%, 
+      rgba(250, 250, 249, 0.4) 35%, 
+      #fafaf9 35.1%, 
+      #fafaf9 100%
+    );
+  }
+
+  /* DESKTOP OVERRIDE (md screens and up) */
+  @media (min-width: 768px) {
+    .smart-glass-panel {
+      /* Horizontal Gradient 
+         Left 50% is Solid (Hides Text)
+         Right 50% is transparent (Shows Video)
+      */
+      background: linear-gradient(to right, 
+        #fafaf9 0%, 
+        #fafaf9 50%, 
+        rgba(250, 250, 249, 0.4) 50.1%, 
+        rgba(250, 250, 249, 0.4) 100%
+      );
+    }
   }
 `;
 
@@ -72,7 +106,7 @@ function ResumeItem({ title, subtitle, date, location, children }: { title: stri
 
 export default function Portfolio() {
   return (
-    <div className="bg-stone-50 text-stone-900 font-sans selection:bg-stone-200 min-h-screen">
+    <div className="bg-stone-50 text-stone-900 font-sans selection:bg-stone-200 min-h-screen m-0 p-0 overflow-x-hidden">
       <style>{customStyles}</style>
 
       {/* --- 1. THE OUTER RECTANGLE FRAME (FIXED) --- */}
@@ -81,32 +115,51 @@ export default function Portfolio() {
           <rect 
             x="1" y="1" width="99.8%" height="99.8%" 
             fill="none" 
-            stroke="#57534e" /* CHANGED: Stone-600 (Dark Gray) */
+            stroke="#57534e"
             strokeWidth="2" 
             className="animate-draw-rect"
           />
         </svg>
       </div>
 
-      {/* --- 2. HERO SECTION (STICKY) --- */}
-      <section className="sticky top-0 h-screen w-full overflow-hidden z-0 flex flex-col justify-center">
+      {/* --- 2. HERO SECTION (FIXED BACKGROUND) --- */}
+      <section className="fixed inset-0 w-full h-screen z-0 flex flex-col md:justify-center">
         
-        {/* HERO GRID */}
-        <div className="h-full w-full grid grid-cols-1 md:grid-cols-2 animate-fade-in-delayed">
+        {/* HERO LAYOUT 
+            - Mobile: Flex Column (Video Top, Text Bottom)
+            - Desktop: Grid (Text Left, Video Right)
+        */}
+        <div className="h-full w-full flex flex-col md:grid md:grid-cols-2 animate-fade-in-delayed">
           
-          {/* LEFT CONTENT (Text) */}
-          <div className="h-full flex flex-col justify-center z-10 pl-12 md:pl-32 pr-12">
-            <div className="space-y-8 max-w-xl">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-stone-900">
+          {/* A. MOBILE VIDEO (Top 35% height - Matches CSS Mask) */}
+          <div className="block md:hidden w-full h-[35vh] relative overflow-hidden bg-stone-100">
+             <video 
+                autoPlay 
+                loop 
+                muted 
+                playsInline 
+                className="w-full h-full object-cover"
+              >
+                <source src="/simulation_mobile_4000kbps.mp4" type="video/mp4" />
+              </video>
+          </div>
+
+          {/* B. LEFT CONTENT (Text) 
+              - Mobile: Bottom 65% height
+              - Desktop: Full height, Left column
+          */}
+          <div className="h-[65vh] md:h-full flex flex-col justify-center z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
+            <div className="space-y-6 md:space-y-8 max-w-xl">
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-stone-900">
                 Hi, I'm Daniel.
               </h1>
-              <p className="text-xl md:text-2xl text-stone-600 leading-relaxed font-light">
+              <p className="text-lg md:text-2xl text-stone-600 leading-relaxed font-light">
                 Researcher specializing in <span className="font-semibold text-stone-800">Tokamak Plasma Physics</span> and scientific computing. 
-                <br/><br/>
+                <br/><br className="hidden md:block"/>
                 My work focuses on magnetohydrodynamics (MHD), transport phenomena, and building tools for complex simulation data.
               </p>
               
-              <div className="flex flex-wrap gap-x-6 gap-y-3 pt-4">
+              <div className="flex flex-wrap gap-x-6 gap-y-3 pt-4 text-sm md:text-base">
                 <SocialLink href="https://scholar.google.com/citations?user=wvKZqjYAAAAJ&hl=en" icon={GraduationCap} label="Google Scholar" />
                 <SocialLink href="https://github.com/d-burg" icon={Github} label="GitHub" />
                 <SocialLink href="https://www.linkedin.com/in/daniel-a-burgess/" icon={Linkedin} label="LinkedIn" />
@@ -115,126 +168,96 @@ export default function Portfolio() {
             </div>
           </div>
 
-          {/* RIGHT CONTENT (Video) */}
-          <div className="h-full relative overflow-hidden bg-stone-50 flex items-center justify-center">
-             
-             {/* A. MOBILE VIDEO */}
-             <div className="block md:hidden w-full h-full absolute inset-0">
-               <video 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline 
-                  className="w-full h-full object-cover"
-                >
-                  <source src="/simulation_mobile_4000kbps.mp4" type="video/mp4" />
-                </video>
-             </div>
-
-             {/* B. DESKTOP VIDEO */}
-             <div className="hidden md:flex items-center justify-center w-full h-full relative">
-                <video 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline 
-                  className="w-[105vh] aspect-video rotate-90 absolute"
-                >
-                  <source src="/simulation2_4000kbps.mp4" type="video/mp4" />
-                </video>
-             </div>
-             
+          {/* C. DESKTOP VIDEO (Right Column) */}
+          <div className="hidden md:flex items-center justify-center w-full h-full relative overflow-hidden">
+             <video 
+                autoPlay 
+                loop 
+                muted 
+                playsInline 
+                className="w-[100vh] h-auto max-w-none rotate-90 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              >
+                <source src="/simulation2_4000kbps.mp4" type="video/mp4" />
+              </video>
           </div>
+          
         </div>
 
         {/* Scroll Hint */}
-        <div className="absolute bottom-12 left-12 md:left-32 animate-bounce text-stone-400 animate-fade-in-delayed z-20">
-          <ChevronDown className="w-8 h-8" />
+        <div className="absolute bottom-8 left-8 md:bottom-12 md:left-32 animate-bounce text-stone-400 animate-fade-in-delayed z-20">
+          <ChevronDown className="w-6 h-6 md:w-8 md:h-8" />
         </div>
       </section>
 
 
-      {/* --- 3. SCROLLING CONTENT --- */}
-      {/* THE MAGIC GRADIENT:
-         - Mobile: Simple translucent background
-         - Desktop (md): Linear Gradient. 
-           0-50% is Solid Stone-50 (Hides "Hi I'm Daniel"). 
-           50-100% is Stone-50 with 70% Opacity (Shows Video).
-      */}
-      <div 
-        className="relative z-10 backdrop-blur-sm"
-        style={{
-          background: 'linear-gradient(to right, #fafaf9 0%, #fafaf9 49.9%, rgba(250, 250, 249, 0.7) 50%, rgba(250, 250, 249, 0.7) 100%)'
-        }}
-      >
+      {/* --- 3. SCROLLING CONTENT (SLIDING PANEL) --- */}
+      <div className="relative z-10 mt-[100vh] smart-glass-panel">
         
         {/* STATIC DIVIDER LINE */}
-        <div className="w-full h-px bg-stone-300 mb-24" />
+        <div className="w-full h-px bg-stone-300 mb-12 md:mb-24" />
 
         {/* PUBLICATIONS */}
         <section className="max-w-4xl mx-auto px-6 pb-12">
-          <h2 className="text-3xl font-bold mb-12 flex items-center gap-3">
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 flex items-center gap-3">
             <FileText className="w-6 h-6" /> Select Publications
           </h2>
 
           <div className="space-y-8">
             <article className="group">
                <div className="text-sm text-stone-400 font-mono mb-1">2024</div>
-               <h3 className="text-xl font-semibold text-stone-900 group-hover:text-blue-600 transition-colors">
+               <h3 className="text-lg md:text-xl font-semibold text-stone-900 group-hover:text-blue-600 transition-colors">
                  <a href="https://www.sciencedirect.com/science/article/abs/pii/S0010465524000341" target="_blank" rel="noopener noreferrer">
                    TokaMaker: An open-source time-dependent Grad-Shafranov tool for the design and modeling of axisymmetric fusion devices
                  </a>
                </h3>
-               <p className="text-stone-600 mt-2">
+               <p className="text-stone-600 mt-2 text-sm md:text-base">
                  C. Hansen, I.G. Stewart, <span className="font-bold text-stone-800">D.A. Burgess</span>, et al.
                </p>
-               <p className="text-stone-500 text-sm italic mt-1">Computer Physics Communications</p>
+               <p className="text-stone-500 text-xs md:text-sm italic mt-1">Computer Physics Communications</p>
             </article>
 
             <article className="group">
                <div className="text-sm text-stone-400 font-mono mb-1">2022</div>
-               <h3 className="text-xl font-semibold text-stone-900 group-hover:text-blue-600 transition-colors">
+               <h3 className="text-lg md:text-xl font-semibold text-stone-900 group-hover:text-blue-600 transition-colors">
                  <a href="https://iopscience.iop.org/article/10.3847/1538-4357/ac650a/meta" target="_blank" rel="noopener noreferrer">
                    The Eel Pulsar Wind Nebula: a PeVatron-Candidate Origin for HAWC J1826-128 and HESS J1826-130
                  </a>
                </h3>
-               <p className="text-stone-600 mt-2">
+               <p className="text-stone-600 mt-2 text-sm md:text-base">
                  <span className="font-bold text-stone-800">D.A. Burgess</span>, K. Mori, C.J. Hailey, et al.
                </p>
-               <p className="text-stone-500 text-sm italic mt-1">The Astrophysical Journal</p>
+               <p className="text-stone-500 text-xs md:text-sm italic mt-1">The Astrophysical Journal</p>
             </article>
           </div>
         </section>
 
         {/* PROJECTS */}
         <section className="max-w-4xl mx-auto px-6 pb-24 pt-12">
-           <h2 className="text-3xl font-bold mb-12 flex items-center gap-3">
+           <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 flex items-center gap-3">
              <Code className="w-6 h-6" /> Software Projects
            </h2>
            
-           {/* CHANGED: bg-white/60 to make it transparent enough to see blur */}
-           <div className="p-8 bg-white/60 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow group">
+           <div className="p-6 md:p-8 bg-white/60 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow group">
               <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-4">
-                 <h3 className="text-xl font-semibold text-stone-900 group-hover:text-blue-600 transition-colors">
+                 <h3 className="text-lg md:text-xl font-semibold text-stone-900 group-hover:text-blue-600 transition-colors">
                     <a href="https://github.com/PrincetonUniversity/GPEC" target="_blank" rel="noopener noreferrer">
                       GPEC (General Plasma Equilibrium Code)
                     </a>
                  </h3>
-                 <span className="px-2 py-1 bg-stone-100 text-stone-600 text-xs rounded border border-stone-200 font-mono">
+                 <span className="px-2 py-1 bg-stone-100 text-stone-600 text-xs rounded border border-stone-200 font-mono w-fit">
                    Fortran
                  </span>
               </div>
-              <p className="text-stone-600 leading-relaxed">
+              <p className="text-stone-600 leading-relaxed text-sm md:text-base">
                  Redeveloped and expanded SLAYER to include updated physics and quadtree adaptive mesh refinement (AMR) for robust calculation of both uncoupled and coupled classical tearing mode growth rates. AMR approach achieved over 20x speedup in root finding procedure.
               </p>
            </div>
         </section>
 
         {/* RESUME */}
-        {/* CHANGED: bg-white/60 to match projects and reveal video */}
         <section className="bg-white/60 border-y border-stone-200 py-24">
           <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-3xl font-bold mb-12">Resume</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-12">Resume</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
               <div className="md:col-span-4 space-y-12">
@@ -387,7 +410,7 @@ export default function Portfolio() {
             </div>
 
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-stone-900">About Me</h2>
+              <h2 className="text-2xl md:text-2xl font-bold text-stone-900">About Me</h2>
               <p className="text-stone-600 leading-relaxed">
                 I am currently a Ph.D. candidate at Columbia University, where I explore the intersection of plasma physics and high-performance computing. My academic journey began in Astrophysics, but I found myself drawn to the immediate and complex challenges of fusion energy.
               </p>
@@ -398,8 +421,25 @@ export default function Portfolio() {
           </div>
         </section>
 
-        <footer className="bg-stone-900 text-stone-400 py-12 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} Daniel Burgess. All rights reserved.</p>
+        {/* FOOTER */}
+        <footer className="bg-stone-900 text-stone-400 py-12 text-sm">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-end gap-6">
+            
+            {/* Left Side: Copyright */}
+            <div className="w-full md:w-auto text-center md:text-left mb-6 md:mb-0">
+              <p>&copy; {new Date().getFullYear()} Daniel Burgess.</p>
+              <p>All rights reserved.</p>
+            </div>
+
+            {/* Right Side: Simulation Description */}
+            <div className="max-w-lg text-left md:text-right text-stone-500 text-xs leading-relaxed font-mono opacity-80">
+              <p>
+                This simulation models the electrostatic two-stream instability in a collisionless, unmagnetized plasma using a 1D Particle-in-Cell (PIC) that follows the method of Philip Mocz. 
+                The system is initialized with two counter-streaming beams totaling 4 × 10⁶ electrons over a neutralizing ion background with drift velocities of v_b = ± 3.0 ω_p⁻¹ 
+                and a thermal spread of v_th = 1.0, resulting in a system Debye length of λ_D = 1.0 and a grid resolution of Δx = 0.1 λ_D.
+              </p>
+            </div>
+          </div>
         </footer>
       </div>
     </div>
