@@ -3,6 +3,15 @@ import { Github, Linkedin, Mail, FileText, ChevronDown, GraduationCap, MapPin, U
 
 // --- CUSTOM ANIMATIONS & RESPONSIVE GRADIENTS ---
 const customStyles = `
+  /* DISABLE RUBBER BAND SCROLL (Overscroll) */
+  html, body {
+    overscroll-behavior-y: none;
+  }
+
+  @keyframes drawRect {
+    0% { stroke-dashoffset: 10000; }
+    100% { stroke-dashoffset: 0; }
+  }
   @keyframes drawRect {
     0% { stroke-dashoffset: 10000; }
     100% { stroke-dashoffset: 0; }
