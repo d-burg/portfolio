@@ -159,10 +159,10 @@ export default function Portfolio() {
           <div className="h-[65vh] md:h-full flex flex-col justify-center pb-[20vh] md:pb-0 z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
             <div className="space-y-6 md:space-y-8 max-w-xl">
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-stone-900">
-                Hi, I'm Daniel.
+                Hi, I'm Daniel!
               </h1>
               <p className="text-lg md:text-2xl text-stone-600 leading-relaxed font-light">
-                Ph.D. candidate specializing in <span className="font-semibold text-stone-800">tokamak plasma physics</span> and scientific computing. 
+                I'm a Ph.D. candidate specializing in <span className="font-semibold text-stone-800">tokamak plasma physics</span> and scientific computing. 
                 <br/><br className="hidden md:block"/>
                 My work focuses on magnetohydrodynamic (MHD) stability of tokamaks, building open source simulation tools, and validating instability theory with experimental data.
               </p>
