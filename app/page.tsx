@@ -163,9 +163,9 @@ export default function Portfolio() {
                 Hi, I'm Daniel.
               </h1>
               <p className="text-lg md:text-2xl text-stone-600 leading-relaxed font-light">
-                Researcher specializing in <span className="font-semibold text-stone-800">Tokamak Plasma Physics</span> and scientific computing. 
+                Ph.D. candidate specializing in <span className="font-semibold text-stone-800">tokamak plasma physics</span> and scientific computing. 
                 <br/><br className="hidden md:block"/>
-                My work focuses on magnetohydrodynamics (MHD), transport phenomena, and building tools for complex simulation data.
+                My work focuses on magnetohydrodynamic (MHD) stability of tokamaks, building open source simulation tools, and validating instability theory with experimental data.
               </p>
               
               <div className="flex flex-wrap gap-x-6 gap-y-3 pt-4 text-sm md:text-base">
@@ -419,7 +419,7 @@ export default function Portfolio() {
               2. md:w-64 md:h-64 (desktop) -> larger than w-48
               3. rounded-xl -> makes it a square with slightly soft corners (remove -xl for sharp corners)
             */}
-            <div className="w-40 h-40 md:w-64 md:h-64 rounded flex-shrink-0 overflow-hidden border-2 border-stone-100 shadow-sm">
+            <div className="w-40 h-40 md:w-64 md:h-64 rounded flex-shrink-0 overflow-hidden border-2 border-stone-100 shadow-sm md:mt-4">
               <img 
                 src="/0207_shifted_portrait_crop-1.jpg" 
                 alt="Daniel Burgess" 
@@ -430,10 +430,12 @@ export default function Portfolio() {
             <div className="space-y-6">
               <h2 className="text-2xl md:text-2xl font-bold text-stone-900">About Me</h2>
               <p className="text-stone-600 leading-relaxed">
-                I am currently a Ph.D. candidate at Columbia University, where I explore the intersection of plasma physics and high-performance computing. My academic journey began in Astrophysics, but I found myself drawn to the immediate and complex challenges of fusion energy.
+                I am currently a Ph.D. candidate at Columbia University, where I explore the intersection of plasma physics and high-performance computing. I joined the program in Fall 2022 after receiving my B.A. in astrophysics, also from Columbia.
+                My research focuses on the magnetohydrodynamic (MHD) stability of tokamak plasmas to tearing modes, modeling of scenarios and control for the SPARC and ARC tokamaks, and development of open source tools such as TokaMaker and the GPEC suite.
               </p>
               <p className="text-stone-600 leading-relaxed">
-                When I am not debugging Fortran code or running equilibrium solvers, I enjoy producing music and exploring the intersection of art and science. I believe that the same creativity required to mix a track is applicable to solving non-linear physics problems.
+                I'm excited to lead efforts that bridge fusion theory and experiment through rigorous validation and handling of experimental uncertainties, and I'm additionally passionate about mentoring the next generation of high school and undergraduate students. 
+                In my free time I enjoy running, skiing, gravel cycling, and playing guitar with friends or strangers.
               </p>
             </div>
           </div>
@@ -449,12 +451,12 @@ export default function Portfolio() {
               <p>All rights reserved.</p>
             </div>
 
-            {/* Right Side: Simulation Description */}
-            <div className="max-w-lg text-left md:text-right text-stone-500 text-xs leading-relaxed font-mono opacity-80">
+            {/* Right Side: Simulation Description. "with drift velocities of v_b = ± 3.0 ω_p⁻¹ and a thermal velocity of v_th = 1.0. The system Debye length is set to λ_D = 1.0, and a grid resolution of Δx = 0.1 λ_D." */}
+            <div className="max-w-lg text-left md:text-right text-stone-500 text-[10.5px] leading-relaxed font-mono opacity-80">
               <p>
-                This simulation models the electrostatic two-stream instability in a collisionless, unmagnetized plasma using a 1D Particle-in-Cell (PIC) that follows the method of Philip Mocz. 
-                The system is initialized with two counter-streaming beams totaling 4 × 10⁶ electrons over a neutralizing ion background with drift velocities of v_b = ± 3.0 ω_p⁻¹ 
-                and a thermal spread of v_th = 1.0, resulting in a system Debye length of λ_D = 1.0 and a grid resolution of Δx = 0.1 λ_D.
+                This background simulation models the electrostatic two-stream instability in a collisionless, unmagnetized plasma using a 1D particle-in-cell (PIC) method that follows the approach of Philip Mocz. 
+                The system is initialized with two counter-streaming beams totaling 4 × 10⁶ electrons over a neutralizing ion background. The beam drift velocities are set to ± 3.0 ω_p⁻¹, the Vlasov equation evolves the electron
+                distribution function, and the Poisson equation computes the corresponding E-fields.
               </p>
             </div>
           </div>
