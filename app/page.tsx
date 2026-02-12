@@ -164,7 +164,7 @@ export default function Portfolio() {
               <p className="text-lg md:text-2xl text-stone-600 leading-relaxed font-light">
                 I'm a Ph.D. candidate specializing in nuclear fusion, plasma physics, and scientific computing. 
                 <br/><br className="hidden md:block"/>
-                My work focuses on magnetohydrodynamic (MHD) stability of tokamaks, building open source simulation tools, and validating instability theory with experimental data.
+                My research is focused on magnetohydrodynamic (MHD) stability of tokamaks, building open source simulation tools, and validating instability theory with experimental data.
               </p>
               
               <div className="flex flex-wrap gap-x-6 gap-y-3 pt-4 text-sm md:text-base">
