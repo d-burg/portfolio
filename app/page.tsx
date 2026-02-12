@@ -153,7 +153,7 @@ export default function Portfolio() {
           </div>
 
           {/* B. LEFT CONTENT (Text) 
-              - Mobile: Bottom 65% height
+              - Mobile: Bottom 65% height. Note syntax: <span className="font-semibold text-stone-800">nuclear fusion research</span>
               - Desktop: Full height, Left column
           */}
           <div className="h-[65vh] md:h-full flex flex-col justify-center pb-[20vh] md:pb-0 z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
@@ -162,7 +162,7 @@ export default function Portfolio() {
                 Hi, I'm Daniel!
               </h1>
               <p className="text-lg md:text-2xl text-stone-600 leading-relaxed font-light">
-                I'm a Ph.D. candidate specializing in <span className="font-semibold text-stone-800">tokamak plasma physics</span> and scientific computing. 
+                I'm a Ph.D. candidate specializing in nuclear fusion, plasma physics, and scientific computing. 
                 <br/><br className="hidden md:block"/>
                 My work focuses on magnetohydrodynamic (MHD) stability of tokamaks, building open source simulation tools, and validating instability theory with experimental data.
               </p>
