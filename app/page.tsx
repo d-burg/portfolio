@@ -141,7 +141,7 @@ export default function Portfolio() {
         <div className="h-full w-full flex flex-col md:grid md:grid-cols-2 animate-fade-in-delayed">
           
           {/* A. MOBILE VIDEO (Top 35% height - Matches CSS Mask) */}
-          <div className="block md:hidden w-full h-[35vh] mt-[10vh] relative overflow-hidden bg-stone-100">
+          <div className="block md:hidden w-full h-[35vh] relative overflow-hidden bg-stone-100">
              <video 
                 autoPlay 
                 loop 
@@ -157,7 +157,7 @@ export default function Portfolio() {
               - Mobile: Bottom 65% height
               - Desktop: Full height, Left column
           */}
-          <div className="h-[55vh] md:h-full flex flex-col justify-center pb-[10vh] z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
+          <div className="h-[65vh] md:h-full flex flex-col justify-center pb-[20vh] md:pb-0 z-10 px-8 md:pl-32 md:pr-12 bg-stone-50 md:bg-transparent">
             <div className="space-y-6 md:space-y-8 max-w-xl">
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-stone-900">
                 Hi, I'm Daniel.
@@ -414,8 +414,17 @@ export default function Portfolio() {
         {/* ABOUT ME */}
         <section className="max-w-4xl mx-auto px-6 py-24">
           <div className="flex flex-col md:flex-row gap-12 items-start">
-            <div className="w-32 h-32 md:w-48 md:h-48 bg-stone-200 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
-               <User className="w-12 h-12 text-stone-400" />
+            {/* Changes made:
+              1. w-40 h-40 (mobile) -> slightly larger than w-32
+              2. md:w-64 md:h-64 (desktop) -> larger than w-48
+              3. rounded-xl -> makes it a square with slightly soft corners (remove -xl for sharp corners)
+            */}
+            <div className="w-40 h-40 md:w-64 md:h-64 rounded flex-shrink-0 overflow-hidden border-2 border-stone-100 shadow-sm">
+              <img 
+                src="/0207_shifted_portrait_crop-1.jpg" 
+                alt="Daniel Burgess" 
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div className="space-y-6">
