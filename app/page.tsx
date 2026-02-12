@@ -441,7 +441,7 @@ export default function Portfolio() {
                 My research focuses on the magnetohydrodynamic (MHD) stability of tokamak plasmas to tearing modes, modeling of scenarios and control for the SPARC and ARC tokamaks, and development of open source tools such as TokaMaker and the GPEC suite.
               </p>
               <p className="text-stone-600 leading-relaxed">
-                I'm excited to lead efforts that bridge fusion theory and experiment through rigorous validation and handling of experimental uncertainties, and I'm additionally passionate about mentoring the next generation of high school and undergraduate students. 
+                I'm excited to lead efforts that bridge fusion theory and experiment through rigorous validation and handling of measurement uncertainties, and I'm additionally passionate about mentoring the next generation of high school and undergraduate students. 
                 In my free time I enjoy running, skiing, gravel cycling, and playing guitar with friends or strangers.
               </p>
             </div>
@@ -454,7 +454,7 @@ export default function Portfolio() {
             
             {/* Left Side: Copyright */}
             <div className="w-full md:w-auto text-center md:text-left mb-6 md:mb-0">
-              <p>&copy; {new Date().getFullYear()} Daniel Burgess.</p>
+              <p>&copy; {new Date().getFullYear()} Daniel Burgess</p>
               <p>All rights reserved.</p>
             </div>
 
