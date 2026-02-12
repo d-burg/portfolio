@@ -1,6 +1,5 @@
 import React from 'react';
-import { Github, Linkedin, Mail, FileText, ChevronDown, GraduationCap, MapPin, User, Code } from 'lucide-react';
-
+import { Github, Linkedin, Mail, FileText, ChevronDown, GraduationCap, MapPin, User, Code, ScrollText } from 'lucide-react';
 // --- CUSTOM ANIMATIONS & RESPONSIVE GRADIENTS ---
 const customStyles = `
   /* DISABLE RUBBER BAND SCROLL (Overscroll) */
@@ -243,7 +242,7 @@ export default function Portfolio() {
         {/* PROJECTS */}
         <section className="max-w-4xl mx-auto px-6 pb-24 pt-12">
            <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12 flex items-center gap-3">
-             <Code className="w-6 h-6" /> Software Projects
+             <Code className="w-6 h-6" /> Select Projects
            </h2>
            
            <div className="p-6 md:p-8 bg-white/60 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow group">
@@ -266,8 +265,9 @@ export default function Portfolio() {
         {/* RESUME */}
         <section className="bg-white/60 border-y border-stone-200 py-24">
           <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-bold mb-12">Resume</h2>
-            
+            <h2 className="text-2xl md:text-3xl font-bold mb-12 flex items-center gap-3">
+              <ScrollText className="w-6 h-6" /> Resume
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
               <div className="md:col-span-4 space-y-12">
                  <div>
@@ -309,16 +309,16 @@ export default function Portfolio() {
                      <div>
                        <div className="font-bold text-stone-800">APS-DPP</div>
                        <div className="text-sm text-stone-500 font-mono mt-1 space-x-2">
-                         <a href="#" className="hover:text-blue-600 underline decoration-stone-300">2025</a>
-                         <a href="#" className="hover:text-blue-600 underline decoration-stone-300">2024</a>
-                         <a href="#" className="hover:text-blue-600 underline decoration-stone-300">2023</a>
-                         <a href="#" className="hover:text-blue-600 underline decoration-stone-300">2022</a>
+                         <a href="https://archive.aps.org/dpp/2025/go05/8/" className="hover:text-blue-600 underline decoration-stone-300" target="_blank" rel="noopener noreferrer">2025</a>
+                         <a href="https://meetings.aps.org/Meeting/DPP24/Session/PP12.58" className="hover:text-blue-600 underline decoration-stone-300" target="_blank" rel="noopener noreferrer">2024</a>
+                         <a href="https://meetings.aps.org/Meeting/DPP23/Session/JP11.146" className="hover:text-blue-600 underline decoration-stone-300" target="_blank" rel="noopener noreferrer">2023</a>
+                         <a href="https://meetings.aps.org/Meeting/DPP22/Session/JP11.47" className="hover:text-blue-600 underline decoration-stone-300" target="_blank" rel="noopener noreferrer">2022</a>
                        </div>
                      </div>
                      <div>
                        <div className="font-bold text-stone-800">Intl. Cosmic Ray Conf.</div>
                        <div className="text-sm text-stone-500 font-mono mt-1">
-                         <a href="#" className="hover:text-blue-600 underline decoration-stone-300">2021</a>
+                         <a href="https://arxiv.org/abs/2108.00557" className="hover:text-blue-600 underline decoration-stone-300" target="_blank" rel="noopener noreferrer">2021</a>
                        </div>
                      </div>
                    </div>
@@ -330,7 +330,7 @@ export default function Portfolio() {
                 
                 <ResumeItem 
                   title="Columbia Plasma Physics Laboratory" 
-                  subtitle="PhD Student"
+                  subtitle="Ph.D. Student"
                   date="Sep 2022 — Present"
                   location="New York, NY"
                 >
@@ -360,7 +360,7 @@ export default function Portfolio() {
                 >
                   <ul className="list-disc list-outside ml-4 space-y-2">
                     <li>Developed a modular, fault-tolerant software package to simulate atmospheric radiative transfer.</li>
-                    <li>Vectorized and parallelized functions using Xarray to reduce calculation time from hours to seconds with minimal accuracy loss.</li>
+                    <li>Vectorized and parallelized functions using Xarray and Dask to reduce calculation time from hours to seconds with minimal accuracy loss.</li>
                   </ul>
                 </ResumeItem>
 
@@ -392,7 +392,7 @@ export default function Portfolio() {
                   date="2020 — 2023"
                   subtitle="Columbia University"
                 >
-                  <p>TA for APPH E4101 (Dynamical Systems), APPH E4100 (Quantum Physics), and Intro to Astrophysics. Graded coursework and led student review sessions.</p>
+                  <p>TA for APPH E4101 (Dynamical Systems), APPH E4100 (Quantum Physics), and ASTR W2001 (Intro to Astrophysics). Graded coursework and led student review sessions.</p>
                 </ResumeItem>
 
                 <div className="w-full h-px bg-stone-100 my-12" />
@@ -403,7 +403,14 @@ export default function Portfolio() {
                   subtitle="Staff Writer"
                   date="2021"
                 >
-                   <p>Authored science communication pieces on climate science, including "Glacial Ice Cores Reveal 15,000 Year Old Microbes" and "An Artificial Neural Network Joins the Fight Against Receding Glaciers."</p>
+                  <p>
+                    Authored science communication pieces on climate science:{" "}
+                    <a href="https://news.climate.columbia.edu/2021/04/19/glacier-mars-aid-future-astronauts/" className="underline decoration-stone-300 hover:text-blue-600 hover:decoration-blue-600 transition-all" target="_blank" rel="noopener noreferrer">Apr 19</a>,{" "}
+                    <a href="https://news.climate.columbia.edu/2021/05/05/artificial-neural-network-joins-fight-against-receding-glaciers/" className="underline decoration-stone-300 hover:text-blue-600 hover:decoration-blue-600 transition-all" target="_blank" rel="noopener noreferrer">May 5</a>,{" "}
+                    <a href="https://news.climate.columbia.edu/2021/07/09/environmentalists-and-glacier-activists-are-poised-to-rewrite-chiles-constitution/" className="underline decoration-stone-300 hover:text-blue-600 hover:decoration-blue-600 transition-all" target="_blank" rel="noopener noreferrer">Jul 9</a>,{" "}
+                    <a href="https://news.climate.columbia.edu/2021/08/06/melting-ice-and-a-high-altitude-dig-reveal-viking-secrets-in-norway/" className="underline decoration-stone-300 hover:text-blue-600 hover:decoration-blue-600 transition-all" target="_blank" rel="noopener noreferrer">Aug 6</a>, and{" "}
+                    <a href="https://news.climate.columbia.edu/2021/09/01/glacial-ice-cores-reveal-15000-year-old-microbes/" className="underline decoration-stone-300 hover:text-blue-600 hover:decoration-blue-600 transition-all" target="_blank" rel="noopener noreferrer">Sep 1</a>.
+                  </p>
                 </ResumeItem>
 
               </div>
