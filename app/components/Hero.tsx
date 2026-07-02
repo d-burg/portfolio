@@ -210,7 +210,7 @@ export default function Hero() {
           >
             <div className="max-w-xl space-y-5 md:space-y-7">
               <p className="intro-rise intro-rise-1 font-mono text-[11px] uppercase tracking-[0.25em] text-accent md:text-xs">
-                Columbia University · Plasma Physics Laboratory
+                Columbia Fusion Research Center
               </p>
               <h1 className="intro-rise intro-rise-1 text-4xl font-bold tracking-tight text-stone-900 md:text-6xl">
                 Hi, I&apos;m Daniel!
