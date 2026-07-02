@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const LINKS = [
   { id: "publications", label: "Publications" },
@@ -8,6 +9,48 @@ const LINKS = [
   { id: "resume", label: "Resume" },
   { id: "about", label: "About" },
 ];
+
+// The <html> class is the source of truth (set pre-paint from localStorage in
+// the layout script); this hook just mirrors it into React.
+const BG_EVENT = "bg-style-change";
+
+function useSolidBg() {
+  return useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener(BG_EVENT, onChange);
+      return () => window.removeEventListener(BG_EVENT, onChange);
+    },
+    () => document.documentElement.classList.contains("bg-solid"),
+    () => false
+  );
+}
+
+function toggleSolidBg() {
+  const solid = document.documentElement.classList.toggle("bg-solid");
+  try {
+    localStorage.setItem("bg-style", solid ? "solid" : "glass");
+  } catch {}
+  window.dispatchEvent(new Event(BG_EVENT));
+}
+
+function BgToggle() {
+  const solid = useSolidBg();
+  const label = solid
+    ? "Show the background simulation through the page"
+    : "Hide the background simulation behind the page";
+  return (
+    <button
+      type="button"
+      onClick={toggleSolidBg}
+      aria-pressed={!solid}
+      title={label}
+      className="text-stone-400 transition-colors hover:text-stone-700"
+    >
+      {solid ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      <span className="sr-only">{label}</span>
+    </button>
+  );
+}
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -75,6 +118,8 @@ export default function Nav() {
               />
             </a>
           ))}
+          <span className="h-4 w-px bg-stone-300" aria-hidden />
+          <BgToggle />
         </div>
       </nav>
     </header>

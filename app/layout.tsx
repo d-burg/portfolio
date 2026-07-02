@@ -34,8 +34,9 @@ export const metadata: Metadata = {
 };
 
 // Runs before first paint: skips the intro animation on repeat views in the
-// same browser session (see .intro-seen rules in globals.css).
-const introGate = `try{if(sessionStorage.getItem("intro-played"))document.documentElement.classList.add("intro-seen");else sessionStorage.setItem("intro-played","1")}catch(e){}`;
+// same browser session (see .intro-seen rules in globals.css) and restores
+// the persisted solid-background preference (see .glass-panel rules).
+const introGate = `try{if(sessionStorage.getItem("intro-played"))document.documentElement.classList.add("intro-seen");else sessionStorage.setItem("intro-played","1");if(localStorage.getItem("bg-style")==="solid")document.documentElement.classList.add("bg-solid")}catch(e){}`;
 
 export default function RootLayout({
   children,

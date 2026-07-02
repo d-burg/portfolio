@@ -75,6 +75,8 @@ function HeroVideo({
 export default function Hero() {
   const contentRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLAnchorElement>(null);
+  const mobileVideoRef = useRef<HTMLDivElement>(null);
+  const desktopVideoRef = useRef<HTMLDivElement>(null);
   // Only the video matching the current breakpoint is mounted, so the other
   // file is never downloaded.
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -93,6 +95,15 @@ export default function Hero() {
       }
       if (hintRef.current) {
         hintRef.current.style.opacity = String(1 - p * 2.5);
+      }
+      // Frost the simulation as the translucent panel slides over it (the
+      // panel itself uses no backdrop-filter; see globals.css).
+      const frost = Math.min(1, window.scrollY / (window.innerHeight * 0.9));
+      for (const ref of [mobileVideoRef, desktopVideoRef]) {
+        if (ref.current) {
+          ref.current.style.filter = frost === 0 ? "none" : `blur(${(frost * 12).toFixed(1)}px)`;
+          ref.current.style.transform = frost === 0 ? "none" : `scale(${1 + frost * 0.06})`;
+        }
       }
     };
     const onScroll = () => {
@@ -139,13 +150,15 @@ export default function Hero() {
         <div className="flex h-full w-full flex-col md:grid md:grid-cols-2">
           {/* Mobile: video band on top */}
           <div className="relative block h-[34vh] w-full overflow-hidden md:hidden">
-            {isDesktop === false && (
-              <HeroVideo
-                src="/sim-mobile.mp4"
-                poster="/sim-mobile-poster.jpg"
-                reducedMotion={reducedMotion}
-              />
-            )}
+            <div ref={mobileVideoRef} className="h-full w-full will-change-transform">
+              {isDesktop === false && (
+                <HeroVideo
+                  src="/sim-mobile.mp4"
+                  poster="/sim-mobile-poster.jpg"
+                  reducedMotion={reducedMotion}
+                />
+              )}
+            </div>
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-stone-50" />
           </div>
 
@@ -191,13 +204,15 @@ export default function Hero() {
 
           {/* Desktop: video fills the right column (file is pre-rotated) */}
           <div className="relative hidden h-full overflow-hidden md:block">
-            {isDesktop && (
-              <HeroVideo
-                src="/sim-desktop.mp4"
-                poster="/sim-desktop-poster.jpg"
-                reducedMotion={reducedMotion}
-              />
-            )}
+            <div ref={desktopVideoRef} className="h-full w-full will-change-transform">
+              {isDesktop && (
+                <HeroVideo
+                  src="/sim-desktop.mp4"
+                  poster="/sim-desktop-poster.jpg"
+                  reducedMotion={reducedMotion}
+                />
+              )}
+            </div>
             <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-stone-50 to-transparent" />
           </div>
         </div>

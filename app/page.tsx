@@ -101,7 +101,7 @@ export default function Portfolio() {
       <Hero />
 
       {/* Content panel that slides over the fixed hero */}
-      <main className="relative z-10 mt-[100vh] border-t border-stone-200 bg-stone-50 shadow-[0_-12px_32px_-16px_rgba(28,25,23,0.15)]">
+      <main className="glass-panel relative z-10 mt-[100vh] border-t border-stone-200 shadow-[0_-12px_32px_-16px_rgba(28,25,23,0.15)]">
         {/* PUBLICATIONS */}
         <section id="publications" className="mx-auto max-w-4xl scroll-mt-20 px-6 pb-16 pt-20 md:pt-28">
           <Reveal>
@@ -147,7 +147,7 @@ export default function Portfolio() {
           </Reveal>
 
           <Reveal>
-            <div className="group rounded-lg border border-stone-200 bg-white p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
+            <div className="glass-section group rounded-lg border border-stone-200 p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
               <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <h3 className="text-lg font-semibold text-stone-900 md:text-xl">
                   <a
@@ -175,7 +175,7 @@ export default function Portfolio() {
         </section>
 
         {/* RESUME */}
-        <section id="resume" className="scroll-mt-14 border-y border-stone-200 bg-white py-20 md:py-24">
+        <section id="resume" className="glass-section scroll-mt-14 border-y border-stone-200 py-20 md:py-24">
           <div className="mx-auto max-w-4xl px-6">
             <Reveal>
               <SectionHeading index="03 — Background" title="Resume" />
