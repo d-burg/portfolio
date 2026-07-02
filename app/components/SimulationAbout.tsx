@@ -29,10 +29,12 @@ export default function SimulationAbout({
         method that follows the approach of Philip Mocz: two counter-streaming
         electron beams (drift velocities ± 3.0 ω_p⁻¹, thermal spread 1.0) over
         a neutralizing ion background, with the electric field computed from
-        Gauss&apos;s law each timestep. On desktop it is computed live in your
-        browser with 2.5 × 10⁵ macro-particles — click or drag on it to
-        perturb the plasma. On mobile it is a pre-rendered run of the same
-        model with 4 × 10⁶ particles.
+        Gauss&apos;s law each timestep. It runs live in your browser — 4 × 10⁵
+        macro-particles on desktop, 1.2 × 10⁵ on mobile — degrading gracefully
+        (fewer particles, then a pre-rendered run) if your device can&apos;t
+        keep up. Clicking or dragging applies a brief, spatially-localized
+        electric-field impulse that kicks the local electrons toward the
+        velocity under your cursor and lets the beams respond.
       </p>
     </details>
   );

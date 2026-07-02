@@ -48,6 +48,11 @@ function mulberry32(seed: number) {
 
 export class TwoStreamSim {
   readonly cfg: TwoStreamConfig;
+  /**
+   * active particle count — may shrink below cfg.n via decimate() when a
+   * device can't keep up. Always even; the first half is the +vb beam.
+   */
+  n: number;
   /** particle positions in [0, l) */
   pos: Float32Array;
   /** particle velocities; first half is the +vb beam, second half -vb */
@@ -60,15 +65,17 @@ export class TwoStreamSim {
 
   constructor(cfg: TwoStreamConfig) {
     this.cfg = cfg;
-    this.pos = new Float32Array(cfg.n);
-    this.vel = new Float32Array(cfg.n);
+    this.n = cfg.n & ~1;
+    this.pos = new Float32Array(this.n);
+    this.vel = new Float32Array(this.n);
     this.dens = new Float32Array(cfg.nx);
     this.efield = new Float32Array(cfg.nx);
     this.reset(cfg.seed);
   }
 
   reset(seed: number) {
-    const { n, l, vb, vth, a } = this.cfg;
+    const { l, vb, vth, a } = this.cfg;
+    const n = this.n;
     const rand = mulberry32(seed);
     // Box–Muller for the thermal spread
     const gauss = () => {
@@ -88,13 +95,29 @@ export class TwoStreamSim {
   }
 
   /**
+   * Halve the particle count in place, keeping the two beams balanced.
+   * Particles within a beam are i.i.d., so keeping the first quarter of each
+   * beam is an unbiased subsample. The field normalization uses `n`, so the
+   * physics is unchanged — only the sampling noise grows.
+   */
+  decimate() {
+    const half = this.n >> 1;
+    const quarter = half >> 1;
+    if (quarter < 1) return;
+    this.pos.copyWithin(quarter, half, half + quarter);
+    this.vel.copyWithin(quarter, half, half + quarter);
+    this.n = quarter * 2;
+  }
+
+  /**
    * Solve for the field on the grid from current particle positions.
    * Gauss's law in 1D: dE/dx = ρ = n0 - n_e (ions are a fixed neutralizing
    * background), integrated with a cumulative sum; the free constant is fixed
    * by requiring the mean field to vanish (periodic BC).
    */
   private solveField() {
-    const { n, nx, l } = this.cfg;
+    const { nx, l } = this.cfg;
+    const n = this.n;
     const dx = l / nx;
     const dens = this.dens;
     const e = this.efield;
@@ -129,7 +152,8 @@ export class TwoStreamSim {
 
   /** advance one timestep (kick–drift leapfrog) */
   step() {
-    const { n, nx, l, dt } = this.cfg;
+    const { nx, l, dt } = this.cfg;
+    const n = this.n;
     this.solveField();
     const e = this.efield;
     const inv = nx / l;
@@ -156,20 +180,22 @@ export class TwoStreamSim {
   }
 
   /**
-   * Gently pull particle velocities toward vTarget in a Gaussian window
-   * around x0 (used for pointer interaction). Bounded relaxation, so it
-   * cannot blow the simulation up.
+   * Apply an impulsive external electric field localized in a Gaussian
+   * window around x0: Δv(x) = dv · exp(−(x−x0)²/2σ²) (used for pointer
+   * interaction). Unlike a relaxation pull, this is a Hamiltonian kick — it
+   * rigidly shifts the local velocity distribution, preserving phase-space
+   * volume (Liouville), exactly as a brief external E(x) pulse would.
    */
-  perturb(x0: number, vTarget: number, sigma: number, strength: number) {
-    const { n, l } = this.cfg;
-    const s = Math.min(Math.max(strength, 0), 1);
+  kick(x0: number, dv: number, sigma: number) {
+    const { l } = this.cfg;
+    const n = this.n;
+    const amp = Math.max(-6, Math.min(6, dv));
     const inv2 = 1 / (2 * sigma * sigma);
     for (let i = 0; i < n; i++) {
       let d = Math.abs(this.pos[i] - x0);
       if (d > l / 2) d = l - d; // periodic distance
       if (d > 4 * sigma) continue;
-      const w = Math.exp(-d * d * inv2);
-      this.vel[i] += s * w * (vTarget - this.vel[i]);
+      this.vel[i] += amp * Math.exp(-d * d * inv2);
     }
   }
 

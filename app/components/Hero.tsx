@@ -175,13 +175,21 @@ export default function Hero() {
           {/* Mobile: video band on top */}
           <div className="relative block h-[34vh] w-full overflow-hidden md:hidden">
             <div ref={mobileVideoRef} className="h-full w-full will-change-transform">
-              {isDesktop === false && (
-                <HeroVideo
-                  src="/sim-mobile.mp4"
-                  poster="/sim-mobile-poster.jpg"
-                  reducedMotion={reducedMotion}
-                />
-              )}
+              {isDesktop === false &&
+                (reducedMotion || simFallback ? (
+                  <HeroVideo
+                    src="/sim-mobile.mp4"
+                    poster="/sim-mobile-poster.jpg"
+                    reducedMotion={reducedMotion}
+                  />
+                ) : (
+                  <HeroSim
+                    ref={simRef}
+                    orientation="landscape"
+                    particles={120_000}
+                    onFallback={handleSimFallback}
+                  />
+                ))}
             </div>
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-stone-50" />
           </div>
@@ -238,7 +246,7 @@ export default function Hero() {
                     reducedMotion={reducedMotion}
                   />
                 ) : (
-                  <HeroSim ref={simRef} onFallback={handleSimFallback} />
+                  <HeroSim ref={simRef} particles={400_000} onFallback={handleSimFallback} />
                 ))}
             </div>
             <div className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-stone-50 to-transparent" />

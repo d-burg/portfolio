@@ -8,16 +8,13 @@ export interface HeroSimHandle {
   reset(): void;
 }
 
-// Phase-space rendering of the live two-stream simulation, matching the look
-// of the pre-rendered videos: (x, v) density histogram, RdBu_r diverging
-// colormap over the page background, Gaussian-ish smoothing. Velocity runs
-// horizontally (blue beam right), position vertically — the same orientation
-// as the pre-rotated desktop video.
-
 const YLIM = 12; // velocity axis limits, matches the reference render
-const GV = 280; // histogram bins along v (canvas width)
-const GX = 420; // histogram bins along x (canvas height)
-const DPR_CAP = 1.25;
+const GV = 400; // histogram bins along v
+const GX = 600; // histogram bins along x
+const DPR_CAP = 2;
+const CAP_PER_PARTICLE = 3.2e-5; // tone-mapping cap, scales with count
+const MIN_PARTICLES = 60_000; // adaptive floor before other degradations
+const KICK_DV = 3.5; // max |Δv| of a pointer kick
 
 // matplotlib RdBu anchors, red → blue; center replaced with the page
 // background so quiet regions blend seamlessly.
@@ -73,9 +70,15 @@ function boxBlur(src: Float32Array, tmp: Float32Array, w: number, h: number, r: 
 
 export default function HeroSim({
   onFallback,
+  orientation = "portrait",
+  particles = DEFAULT_CONFIG.n,
   ref,
 }: {
   onFallback?: () => void;
+  /** portrait: v horizontal / x vertical (desktop column);
+      landscape: x horizontal / v vertical, +v up (mobile band) */
+  orientation?: "portrait" | "landscape";
+  particles?: number;
   ref?: Ref<HeroSimHandle>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -96,24 +99,23 @@ export default function HeroSim({
       return;
     }
 
+    const portrait = orientation === "portrait";
+    const W = portrait ? GV : GX;
+    const H = portrait ? GX : GV;
     const off = document.createElement("canvas");
-    off.width = GV;
-    off.height = GX;
+    off.width = W;
+    off.height = H;
     const octx = off.getContext("2d")!;
-    const img = octx.createImageData(GV, GX);
+    const img = octx.createImageData(W, H);
     img.data.fill(255);
 
-    const sim = new TwoStreamSim(DEFAULT_CONFIG);
+    const sim = new TwoStreamSim({ ...DEFAULT_CONFIG, n: particles });
+    let cap = sim.n * CAP_PER_PARTICLE;
     const bins = GV * GX;
     const hist = new Float32Array(bins);
     const tmp = new Float32Array(bins);
     const ema = new Float32Array(bins);
     const lut = buildLut();
-    // tone-mapping cap: scales with particle count; tuned against the video
-    // (higher cap → beam cores sit mid-palette rather than at the dark ends)
-    const cap = sim.cfg.n * 7.2e-5;
-
-    const half = sim.cfg.n >> 1;
     const l = sim.cfg.l;
 
     let raf = 0;
@@ -123,6 +125,9 @@ export default function HeroSim({
     let slowFrames = 0;
     let frames = 0;
     let stopped = false;
+    let halfRate = false;
+    let parity = 0;
+    let primed = false;
 
     const sizeCanvas = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
@@ -137,21 +142,46 @@ export default function HeroSim({
     ro.observe(canvas);
     sizeCanvas();
 
-    let primed = false;
     const drawFrame = (stepPhysics: boolean): number => {
       const t0 = performance.now();
       if (stepPhysics) sim.step();
 
-      // signed phase-space histogram: +1 for the +vb beam (blue), −1 red
+      // signed phase-space histogram with bilinear (CIC) deposit:
+      // +1 for the +vb beam (blue), −1 red. Bilinear splatting removes the
+      // nearest-bin aliasing that a plain histogram shows once upscaled.
       hist.fill(0);
       const { pos, vel } = sim;
+      const n = sim.n;
+      const half = n >> 1;
       const sx = GV / (2 * YLIM);
       const sy = GX / l;
-      for (let i = 0; i < sim.cfg.n; i++) {
-        const bx = ((vel[i] + YLIM) * sx) | 0;
-        if (bx < 0 || bx >= GV) continue;
-        const by = (pos[i] * sy) | 0;
-        hist[(by >= GX ? GX - 1 : by) * GV + bx] += i < half ? 1 : -1;
+      for (let i = 0; i < n; i++) {
+        const fv = (vel[i] + YLIM) * sx - 0.5;
+        let v0 = fv | 0;
+        if (fv < 0) v0 -= 1;
+        const wv = fv - v0;
+        if (v0 < -1 || v0 >= GV) continue;
+        const fx = pos[i] * sy - 0.5;
+        let x0 = fx | 0;
+        if (fx < 0) x0 -= 1;
+        const wx = fx - x0;
+        // x is periodic; v bins outside the window are skipped
+        const xa = x0 < 0 ? GX - 1 : x0;
+        const xb = x0 + 1 >= GX ? 0 : x0 + 1;
+        const s = i < half ? 1 : -1;
+        const rowA = xa * GV;
+        const rowB = xb * GV;
+        if (v0 >= 0) {
+          const w0 = s * (1 - wv);
+          hist[rowA + v0] += w0 * (1 - wx);
+          hist[rowB + v0] += w0 * wx;
+        }
+        const v1 = v0 + 1;
+        if (v1 < GV) {
+          const w1 = s * wv;
+          hist[rowA + v1] += w1 * (1 - wx);
+          hist[rowB + v1] += w1 * wx;
+        }
       }
       boxBlur(hist, tmp, GV, GX, 2);
       if (primed) {
@@ -185,19 +215,38 @@ export default function HeroSim({
 
       const scale = fade / cap;
       const data = img.data;
-      for (let k = 0; k < bins; k++) {
-        let s = ema[k] * scale;
-        if (s > 1) s = 1;
-        else if (s < -1) s = -1;
-        const idx = (((s + 1) * 255.5) | 0) * 3;
-        const p = k * 4;
-        data[p] = lut[idx];
-        data[p + 1] = lut[idx + 1];
-        data[p + 2] = lut[idx + 2];
+      if (portrait) {
+        // pixel rows are x bins, columns are v bins — same layout as hist
+        for (let k = 0; k < bins; k++) {
+          let s = ema[k] * scale;
+          if (s > 1) s = 1;
+          else if (s < -1) s = -1;
+          const idx = (((s + 1) * 255.5) | 0) * 3;
+          const p = k * 4;
+          data[p] = lut[idx];
+          data[p + 1] = lut[idx + 1];
+          data[p + 2] = lut[idx + 2];
+        }
+      } else {
+        // landscape: x runs horizontally, v vertically with +v at the top
+        for (let py = 0; py < GV; py++) {
+          const vBin = GV - 1 - py;
+          const rowOut = py * GX;
+          for (let px = 0; px < GX; px++) {
+            let s = ema[px * GV + vBin] * scale;
+            if (s > 1) s = 1;
+            else if (s < -1) s = -1;
+            const idx = (((s + 1) * 255.5) | 0) * 3;
+            const p = (rowOut + px) * 4;
+            data[p] = lut[idx];
+            data[p + 1] = lut[idx + 1];
+            data[p + 2] = lut[idx + 2];
+          }
+        }
       }
       octx.putImageData(img, 0, 0);
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "medium";
+      ctx.imageSmoothingQuality = "high";
       ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
       return performance.now() - t0;
     };
@@ -207,18 +256,28 @@ export default function HeroSim({
       raf = requestAnimationFrame(frame);
       // skip work when the tab is hidden or the panel fully covers the hero
       if (document.hidden || window.scrollY > window.innerHeight) return;
+      parity ^= 1;
+      if (halfRate && parity) return;
 
       const elapsed = drawFrame(true);
 
-      // watchdog: if compute is consistently too slow, hand back to the video
+      // adaptive ladder: sustained slow frames step down through particle
+      // decimation → half frame rate → pre-rendered video
       frames++;
       if (elapsed > 24) slowFrames++;
       if (frames >= 120) {
-        if (slowFrames > 90) {
-          stopped = true;
-          cancelAnimationFrame(raf);
-          onFallback?.();
-          return;
+        if (slowFrames > 80) {
+          if (sim.n > MIN_PARTICLES) {
+            sim.decimate();
+            cap = sim.n * CAP_PER_PARTICLE;
+          } else if (!halfRate) {
+            halfRate = true;
+          } else {
+            stopped = true;
+            cancelAnimationFrame(raf);
+            onFallback?.();
+            return;
+          }
         }
         frames = 0;
         slowFrames = 0;
@@ -228,22 +287,27 @@ export default function HeroSim({
     drawFrame(false);
     raf = requestAnimationFrame(frame);
 
-    // pointer interaction: nudge the local distribution toward the velocity
-    // under the cursor — seeds ripples and vortices
+    // pointer interaction: an impulsive, spatially-localized E-field kick.
+    // The cursor's velocity-axis coordinate sets the kick direction and
+    // strength; its position-axis coordinate centers the Gaussian window.
     let pointerDown = false;
-    const applyPointer = (e: PointerEvent, strength: number) => {
+    const applyKick = (e: PointerEvent, strength: number) => {
       const rect = canvas.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
-      const vTarget = (((e.clientX - rect.left) / rect.width) * 2 - 1) * YLIM;
-      const x0 = ((e.clientY - rect.top) / rect.height) * l;
-      sim.perturb(x0, vTarget, 2, strength);
+      const u = portrait
+        ? ((e.clientX - rect.left) / rect.width) * 2 - 1
+        : 1 - ((e.clientY - rect.top) / rect.height) * 2;
+      const x0 = portrait
+        ? ((e.clientY - rect.top) / rect.height) * l
+        : ((e.clientX - rect.left) / rect.width) * l;
+      sim.kick(x0, u * KICK_DV * strength, 2);
     };
     const onDown = (e: PointerEvent) => {
       pointerDown = true;
-      applyPointer(e, 0.5);
+      applyKick(e, 1);
     };
     const onMove = (e: PointerEvent) => {
-      if (pointerDown) applyPointer(e, 0.2);
+      if (pointerDown) applyKick(e, 0.25);
     };
     const onUp = () => {
       pointerDown = false;
@@ -260,12 +324,14 @@ export default function HeroSim({
       canvas.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [onFallback]);
+  }, [onFallback, orientation, particles]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="h-full w-full cursor-crosshair"
+      // touch-pan-y keeps page scrolling working over the canvas on touch
+      // devices; taps still land as pointerdown kicks
+      className="h-full w-full cursor-crosshair touch-pan-y"
       aria-label="Live particle-in-cell simulation of the two-stream plasma instability. Click to perturb it."
     />
   );
