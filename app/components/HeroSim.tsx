@@ -16,7 +16,10 @@ const GX = 600; // histogram bins along x
 const DPR_CAP = 2;
 const CAP_PER_PARTICLE = 3.2e-5; // tone-mapping cap, scales with count
 const MIN_PARTICLES = 60_000; // adaptive floor before other degradations
-const KICK_DV = 3.5; // max |Δv| of a pointer kick
+const KICK_DV = 3.5; // total |Δv| of a click kick
+const KICK_SIGMA = 2; // spatial width of the kick window
+const KICK_RAMP_FRAMES = 20; // Hann-windowed onset, ~1/3 s at 60fps
+const DRAG_DV_PER_FRAME = 0.05; // sustained field strength while dragging
 
 // matplotlib RdBu anchors, red → blue; center replaced with the page
 // background so quiet regions blend seamlessly.
@@ -126,6 +129,11 @@ export default function HeroSim({
 
     let raf = 0;
     let seed = sim.cfg.seed;
+    // pointer state: queued Hann-ramped click kicks + current drag position
+    const kicks: { x0: number; dv: number; age: number; total: number }[] = [];
+    let pointerDown = false;
+    let pointerU = 0;
+    let pointerX0 = 0;
     let fade = 1;
     let phase: "run" | "fadeout" | "fadein" = "run";
     let slowFrames = 0;
@@ -150,7 +158,20 @@ export default function HeroSim({
 
     const drawFrame = (stepPhysics: boolean): number => {
       const t0 = performance.now();
-      if (stepPhysics) sim.step();
+      if (stepPhysics) {
+        sim.step();
+        // pointer kicks are spread over a Hann envelope so they swell in
+        // rather than jerking the particles; the per-frame weights sum to 1,
+        // so the integrated Δv still equals the requested kick
+        for (let i = kicks.length - 1; i >= 0; i--) {
+          const k = kicks[i];
+          const w = Math.sin((Math.PI * k.age) / k.total) ** 2 * (2 / k.total);
+          sim.kick(k.x0, k.dv * w, KICK_SIGMA);
+          if (++k.age >= k.total) kicks.splice(i, 1);
+        }
+        // dragging applies a gentle sustained field at the cursor
+        if (pointerDown) sim.kick(pointerX0, pointerU * KICK_DV * DRAG_DV_PER_FRAME, KICK_SIGMA);
+      }
 
       // signed phase-space histogram with bilinear (CIC) deposit:
       // +1 for the +vb beam (blue), −1 red. Bilinear splatting removes the
@@ -299,29 +320,30 @@ export default function HeroSim({
     drawFrame(false);
     raf = requestAnimationFrame(frame);
 
-    // pointer interaction: an impulsive, spatially-localized E-field kick.
-    // The cursor's velocity-axis coordinate sets the kick direction and
-    // strength; its position-axis coordinate centers the Gaussian window.
-    let pointerDown = false;
-    const applyKick = (e: PointerEvent, strength: number) => {
+    // pointer interaction: a spatially-localized E-field pulse. The cursor's
+    // velocity-axis coordinate sets the direction and strength; its
+    // position-axis coordinate centers the Gaussian window. Clicks enqueue a
+    // ramped pulse (applied over KICK_RAMP_FRAMES in drawFrame); drags are a
+    // sustained gentle field at the cursor.
+    const readPointer = (e: PointerEvent): boolean => {
       const rect = canvas.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return;
-      const u = portrait
+      if (rect.width === 0 || rect.height === 0) return false;
+      pointerU = portrait
         ? ((e.clientX - rect.left) / rect.width) * 2 - 1
         : 1 - ((e.clientY - rect.top) / rect.height) * 2;
-      const x0 = portrait
+      pointerX0 = portrait
         ? ((e.clientY - rect.top) / rect.height) * l
         : ((e.clientX - rect.left) / rect.width) * l;
-      sim.kick(x0, u * KICK_DV * strength, 2);
-      // while paused, redraw once so the kick is visible immediately
-      if (pausedRef.current) drawFrame(false);
+      return true;
     };
     const onDown = (e: PointerEvent) => {
+      if (!readPointer(e)) return;
       pointerDown = true;
-      applyKick(e, 1);
+      kicks.push({ x0: pointerX0, dv: pointerU * KICK_DV, age: 0, total: KICK_RAMP_FRAMES });
+      if (kicks.length > 16) kicks.shift();
     };
     const onMove = (e: PointerEvent) => {
-      if (pointerDown) applyKick(e, 0.25);
+      if (pointerDown) readPointer(e);
     };
     const onUp = () => {
       pointerDown = false;
