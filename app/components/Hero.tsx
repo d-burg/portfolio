@@ -1,8 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { ChevronDown, Github, GraduationCap, Linkedin, Mail } from "lucide-react";
-import HeroSim from "./HeroSim";
+import {
+  ChevronDown,
+  Github,
+  GraduationCap,
+  Linkedin,
+  Mail,
+  MousePointerClick,
+  RotateCcw,
+  X,
+} from "lucide-react";
+import HeroSim, { type HeroSimHandle } from "./HeroSim";
+import SimulationAbout from "./SimulationAbout";
 
 // null on the server / during hydration, so no video is rendered (and thus
 // downloaded) until the real breakpoint is known.
@@ -85,14 +95,24 @@ export default function Hero() {
   // If the live simulation can't keep up on this machine, fall back to video
   const [simFallback, setSimFallback] = useState(false);
   const handleSimFallback = useCallback(() => setSimFallback(true), []);
+  const simRef = useRef<HeroSimHandle>(null);
+  // interaction hint card: dismissed by its X or by scrolling to the content
+  // panel; once gone it stays gone for the page view
+  const [simCardDismissed, setSimCardDismissed] = useState(false);
 
   // Fade the hero out as the content panel slides over it, so the panel edge
   // never slices through legible text.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let raf = 0;
+    let cardGone = false;
     const update = () => {
       const p = Math.min(1, window.scrollY / (window.innerHeight * 0.55));
+      // scrolling to the content dismisses the interaction card for good
+      if (!cardGone && window.scrollY > window.innerHeight * 0.9) {
+        cardGone = true;
+        setSimCardDismissed(true);
+      }
       if (contentRef.current) {
         contentRef.current.style.opacity = String(1 - p);
         contentRef.current.style.transform = `translateY(${p * -24}px)`;
@@ -218,7 +238,7 @@ export default function Hero() {
                     reducedMotion={reducedMotion}
                   />
                 ) : (
-                  <HeroSim onFallback={handleSimFallback} />
+                  <HeroSim ref={simRef} onFallback={handleSimFallback} />
                 ))}
             </div>
             <div className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-stone-50 to-transparent" />
@@ -234,6 +254,51 @@ export default function Hero() {
         >
           <ChevronDown className="h-6 w-6 animate-bounce md:h-7 md:w-7" />
         </a>
+
+        {/* Live-simulation controls (desktop only, when the sim is running) */}
+        {isDesktop &&
+          !reducedMotion &&
+          !simFallback &&
+          (simCardDismissed ? (
+            <button
+              type="button"
+              onClick={() => simRef.current?.reset()}
+              title="Reset the simulation"
+              className="absolute bottom-7 right-7 z-20 rounded-full border border-stone-200 bg-white/85 p-2 text-stone-500 shadow-sm transition-colors hover:text-accent"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span className="sr-only">Reset the simulation</span>
+            </button>
+          ) : (
+            <div
+              className="intro-rise absolute bottom-7 right-7 z-20 w-72 rounded-lg border border-stone-200 bg-white/90 p-4 shadow-md"
+              style={{ animationDelay: "2.4s" }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="flex items-start gap-2 text-sm leading-snug text-stone-700">
+                  <MousePointerClick className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  This plasma is simulated live — click or drag it to perturb
+                  the beams.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSimCardDismissed(true)}
+                  aria-label="Dismiss"
+                  className="text-stone-400 transition-colors hover:text-stone-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <SimulationAbout tone="light" className="mt-3" />
+              <button
+                type="button"
+                onClick={() => simRef.current?.reset()}
+                className="mt-3 flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-colors hover:text-accent"
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Reset simulation
+              </button>
+            </div>
+          ))}
       </section>
     </>
   );

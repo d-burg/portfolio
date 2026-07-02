@@ -3,6 +3,7 @@ import { ArrowUpRight, MapPin } from "lucide-react";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Reveal from "./components/Reveal";
+import SimulationAbout from "./components/SimulationAbout";
 
 function SectionHeading({ index, title }: { index: string; title: string }) {
   return (
@@ -499,22 +500,7 @@ export default function Portfolio() {
               <p>All rights reserved.</p>
             </div>
 
-            <details className="max-w-lg md:text-right">
-              <summary className="cursor-pointer text-stone-300 transition-colors hover:text-white md:text-right">
-                About the background simulation
-              </summary>
-              <p className="mt-3 text-xs leading-relaxed text-stone-400">
-                The background models the electrostatic two-stream instability in a
-                collisionless, unmagnetized plasma using a 1D particle-in-cell (PIC)
-                method that follows the approach of Philip Mocz: two counter-streaming
-                electron beams (drift velocities ± 3.0 ω_p⁻¹, thermal spread 1.0) over a
-                neutralizing ion background, with the electric field computed from
-                Gauss&apos;s law each timestep. On desktop it is computed live in your
-                browser with 2.5 × 10⁵ macro-particles — click or drag on it to perturb
-                the plasma. On mobile it is a pre-rendered run of the same model with
-                4 × 10⁶ particles.
-              </p>
-            </details>
+            <SimulationAbout tone="dark" className="max-w-lg md:text-right" />
           </div>
         </footer>
       </main>

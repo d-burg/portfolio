@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import { DEFAULT_CONFIG, TwoStreamSim } from "../lib/twoStream";
+
+export interface HeroSimHandle {
+  /** crossfade into a fresh run with a new seed */
+  reset(): void;
+}
 
 // Phase-space rendering of the live two-stream simulation, matching the look
 // of the pre-rendered videos: (x, v) density histogram, RdBu_r diverging
@@ -12,7 +17,6 @@ import { DEFAULT_CONFIG, TwoStreamSim } from "../lib/twoStream";
 const YLIM = 12; // velocity axis limits, matches the reference render
 const GV = 280; // histogram bins along v (canvas width)
 const GX = 420; // histogram bins along x (canvas height)
-const RESTART_T = 110; // sim time at which to crossfade into a fresh run
 const DPR_CAP = 1.25;
 
 // matplotlib RdBu anchors, red → blue; center replaced with the page
@@ -67,8 +71,21 @@ function boxBlur(src: Float32Array, tmp: Float32Array, w: number, h: number, r: 
   }
 }
 
-export default function HeroSim({ onFallback }: { onFallback?: () => void }) {
+export default function HeroSim({
+  onFallback,
+  ref,
+}: {
+  onFallback?: () => void;
+  ref?: Ref<HeroSimHandle>;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const resetRequested = useRef(false);
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      resetRequested.current = true;
+    },
+  }));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -144,8 +161,12 @@ export default function HeroSim({ onFallback }: { onFallback?: () => void }) {
         primed = true;
       }
 
-      // restart choreography: fade to background, reseed, fade back in
-      if (phase === "run" && sim.t > RESTART_T) phase = "fadeout";
+      // reset choreography (user-triggered): fade to background, reseed,
+      // fade back in
+      if (resetRequested.current) {
+        resetRequested.current = false;
+        if (phase === "run") phase = "fadeout";
+      }
       if (phase === "fadeout") {
         fade -= 0.03;
         if (fade <= 0) {
