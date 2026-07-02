@@ -6,6 +6,8 @@ import { DEFAULT_CONFIG, TwoStreamSim } from "../lib/twoStream";
 export interface HeroSimHandle {
   /** crossfade into a fresh run with a new seed */
   reset(): void;
+  /** freeze/resume the simulation (the last frame stays on screen) */
+  setPaused(paused: boolean): void;
 }
 
 const YLIM = 12; // velocity axis limits, matches the reference render
@@ -83,10 +85,14 @@ export default function HeroSim({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const resetRequested = useRef(false);
+  const pausedRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
     reset: () => {
       resetRequested.current = true;
+    },
+    setPaused: (paused: boolean) => {
+      pausedRef.current = paused;
     },
   }));
 
@@ -258,6 +264,12 @@ export default function HeroSim({
       if (document.hidden || window.scrollY > window.innerHeight) return;
       parity ^= 1;
       if (halfRate && parity) return;
+      // paused: freeze on the last frame, but let a requested reset's
+      // crossfade still play out (drawFrame without stepping the physics)
+      if (pausedRef.current) {
+        if (phase !== "run" || resetRequested.current) drawFrame(false);
+        return;
+      }
 
       const elapsed = drawFrame(true);
 
@@ -301,6 +313,8 @@ export default function HeroSim({
         ? ((e.clientY - rect.top) / rect.height) * l
         : ((e.clientX - rect.left) / rect.width) * l;
       sim.kick(x0, u * KICK_DV * strength, 2);
+      // while paused, redraw once so the kick is visible immediately
+      if (pausedRef.current) drawFrame(false);
     };
     const onDown = (e: PointerEvent) => {
       pointerDown = true;

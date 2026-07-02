@@ -8,6 +8,8 @@ import {
   Linkedin,
   Mail,
   MousePointerClick,
+  Pause,
+  Play,
   RotateCcw,
   X,
 } from "lucide-react";
@@ -99,6 +101,13 @@ export default function Hero() {
   // interaction hint card: dismissed by its X or by scrolling to the content
   // panel; once gone it stays gone for the page view
   const [simCardDismissed, setSimCardDismissed] = useState(false);
+  const [simPaused, setSimPaused] = useState(false);
+  const toggleSimPaused = useCallback(() => {
+    setSimPaused((prev) => {
+      simRef.current?.setPaused(!prev);
+      return !prev;
+    });
+  }, []);
 
   // Fade the hero out as the content panel slides over it, so the panel edge
   // never slices through legible text.
@@ -268,15 +277,28 @@ export default function Hero() {
           !reducedMotion &&
           !simFallback &&
           (simCardDismissed ? (
-            <button
-              type="button"
-              onClick={() => simRef.current?.reset()}
-              title="Reset the simulation"
-              className="absolute bottom-7 right-7 z-20 rounded-full border border-stone-200 bg-white/85 p-2 text-stone-500 shadow-sm transition-colors hover:text-accent"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span className="sr-only">Reset the simulation</span>
-            </button>
+            <div className="absolute bottom-7 right-7 z-20 flex gap-2">
+              <button
+                type="button"
+                onClick={toggleSimPaused}
+                title={simPaused ? "Resume the simulation" : "Pause the simulation"}
+                className="rounded-full border border-stone-200 bg-white/85 p-2 text-stone-500 shadow-sm transition-colors hover:text-accent"
+              >
+                {simPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                <span className="sr-only">
+                  {simPaused ? "Resume the simulation" : "Pause the simulation"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => simRef.current?.reset()}
+                title="Reset the simulation"
+                className="rounded-full border border-stone-200 bg-white/85 p-2 text-stone-500 shadow-sm transition-colors hover:text-accent"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="sr-only">Reset the simulation</span>
+              </button>
+            </div>
           ) : (
             <div
               className="intro-rise absolute bottom-7 right-7 z-20 w-72 rounded-lg border border-stone-200 bg-white/90 p-4 shadow-md"
@@ -298,13 +320,30 @@ export default function Hero() {
                 </button>
               </div>
               <SimulationAbout tone="light" className="mt-3" />
-              <button
-                type="button"
-                onClick={() => simRef.current?.reset()}
-                className="mt-3 flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-colors hover:text-accent"
-              >
-                <RotateCcw className="h-3.5 w-3.5" /> Reset simulation
-              </button>
+              <div className="mt-3 flex items-center gap-5">
+                <button
+                  type="button"
+                  onClick={toggleSimPaused}
+                  className="flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-colors hover:text-accent"
+                >
+                  {simPaused ? (
+                    <>
+                      <Play className="h-3.5 w-3.5" /> Play
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="h-3.5 w-3.5" /> Pause
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => simRef.current?.reset()}
+                  className="flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-colors hover:text-accent"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> Reset
+                </button>
+              </div>
             </div>
           ))}
       </section>
