@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronDown, Github, GraduationCap, Linkedin, Mail } from "lucide-react";
+import HeroSim from "./HeroSim";
 
 // null on the server / during hydration, so no video is rendered (and thus
 // downloaded) until the real breakpoint is known.
@@ -81,6 +82,9 @@ export default function Hero() {
   // file is never downloaded.
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)") ?? false;
+  // If the live simulation can't keep up on this machine, fall back to video
+  const [simFallback, setSimFallback] = useState(false);
+  const handleSimFallback = useCallback(() => setSimFallback(true), []);
 
   // Fade the hero out as the content panel slides over it, so the panel edge
   // never slices through legible text.
@@ -202,18 +206,22 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Desktop: video fills the right column (file is pre-rotated) */}
+          {/* Desktop: live PIC simulation fills the right column; falls back
+              to the pre-rendered (pre-rotated) video if it can't keep up */}
           <div className="relative hidden h-full overflow-hidden md:block">
             <div ref={desktopVideoRef} className="h-full w-full will-change-transform">
-              {isDesktop && (
-                <HeroVideo
-                  src="/sim-desktop.mp4"
-                  poster="/sim-desktop-poster.jpg"
-                  reducedMotion={reducedMotion}
-                />
-              )}
+              {isDesktop &&
+                (reducedMotion || simFallback ? (
+                  <HeroVideo
+                    src="/sim-desktop.mp4"
+                    poster="/sim-desktop-poster.jpg"
+                    reducedMotion={reducedMotion}
+                  />
+                ) : (
+                  <HeroSim onFallback={handleSimFallback} />
+                ))}
             </div>
-            <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-stone-50 to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-stone-50 to-transparent" />
           </div>
         </div>
 
