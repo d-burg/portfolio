@@ -153,31 +153,9 @@ export default function Hero() {
 
   return (
     <>
-      {/* Boot trace: two strokes leave the top-left corner and meet at the
-          bottom-right. pathLength=1 keeps the speed uniform on any screen. */}
-      <div className="intro-trace pointer-events-none fixed inset-4 z-50" aria-hidden>
-        <svg
-          className="h-full w-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          fill="none"
-        >
-          <path
-            d="M 0.4 0.4 L 99.6 0.4 L 99.6 99.6"
-            pathLength={1}
-            stroke="#78716c"
-            strokeWidth={1.5}
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d="M 0.4 0.4 L 0.4 99.6 L 99.6 99.6"
-            pathLength={1}
-            stroke="#78716c"
-            strokeWidth={1.5}
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
-      </div>
+      {/* Boot sweep: a diffuse glow swings once around the page frame and
+          dissolves (see .intro-sweep in globals.css) */}
+      <div className="intro-sweep pointer-events-none fixed inset-3 z-50" aria-hidden />
 
       <section className="fixed inset-0 z-0 h-screen" aria-label="Introduction">
         <div className="flex h-full w-full flex-col md:grid md:grid-cols-2">
