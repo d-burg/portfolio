@@ -65,12 +65,26 @@ function HeroVideo({
   poster: string;
   reducedMotion: boolean;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // iOS Safari sometimes refuses to autoplay React-mounted videos because the
+  // muted ATTRIBUTE (not just the property) is checked at insertion — set it
+  // explicitly and nudge playback.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.setAttribute("muted", "");
+    v.play()?.catch(() => {});
+  }, [reducedMotion]);
+
   if (reducedMotion) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={poster} alt="" className="h-full w-full object-cover" />;
   }
   return (
     <video
+      ref={videoRef}
       autoPlay
       loop
       muted
@@ -101,18 +115,24 @@ export default function Hero() {
   // interaction hint card: dismissed by its X or by scrolling to the content
   // panel; once gone it stays gone for the page view
   const [simCardDismissed, setSimCardDismissed] = useState(false);
-  const [simPaused, setSimPaused] = useState(false);
+  // null = untouched: under reduced motion the sim mounts paused, so the
+  // controls derive their initial state from that preference
+  const [simPaused, setSimPaused] = useState<boolean | null>(null);
+  const effectiveSimPaused = simPaused ?? reducedMotion;
   const toggleSimPaused = useCallback(() => {
-    setSimPaused((prev) => {
-      simRef.current?.setPaused(!prev);
-      return !prev;
-    });
-  }, []);
+    const next = !effectiveSimPaused;
+    simRef.current?.setPaused(next);
+    setSimPaused(next);
+  }, [effectiveSimPaused]);
+  const handleSimPausedChange = useCallback((p: boolean) => setSimPaused(p), []);
 
   // Fade the hero out as the content panel slides over it, so the panel edge
-  // never slices through legible text.
+  // never slices through legible text. The opacity fade and frost blur run
+  // even under prefers-reduced-motion (they're not movement, and without the
+  // fade the hero text ghosts through the translucent panel); only the
+  // translate/scale movement is motion-gated.
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const allowMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
     let cardGone = false;
     const update = () => {
@@ -124,7 +144,9 @@ export default function Hero() {
       }
       if (contentRef.current) {
         contentRef.current.style.opacity = String(1 - p);
-        contentRef.current.style.transform = `translateY(${p * -24}px)`;
+        if (allowMotion) {
+          contentRef.current.style.transform = `translateY(${p * -24}px)`;
+        }
       }
       if (hintRef.current) {
         hintRef.current.style.opacity = String(1 - p * 2.5);
@@ -135,7 +157,9 @@ export default function Hero() {
       for (const ref of [mobileVideoRef, desktopVideoRef]) {
         if (ref.current) {
           ref.current.style.filter = frost === 0 ? "none" : `blur(${(frost * 12).toFixed(1)}px)`;
-          ref.current.style.transform = frost === 0 ? "none" : `scale(${1 + frost * 0.06})`;
+          if (allowMotion) {
+            ref.current.style.transform = frost === 0 ? "none" : `scale(${1 + frost * 0.06})`;
+          }
         }
       }
     };
@@ -163,7 +187,7 @@ export default function Hero() {
           <div className="relative block h-[34vh] w-full overflow-hidden md:hidden">
             <div ref={mobileVideoRef} className="h-full w-full will-change-transform">
               {isDesktop === false &&
-                (reducedMotion || simFallback ? (
+                (simFallback ? (
                   <HeroVideo
                     src="/sim-mobile.mp4"
                     poster="/sim-mobile-poster.jpg"
@@ -174,6 +198,8 @@ export default function Hero() {
                     ref={simRef}
                     orientation="landscape"
                     particles={120_000}
+                    startPaused={reducedMotion}
+                    onPausedChange={handleSimPausedChange}
                     onFallback={handleSimFallback}
                   />
                 ))}
@@ -226,14 +252,20 @@ export default function Hero() {
           <div className="relative hidden h-full overflow-hidden md:block">
             <div ref={desktopVideoRef} className="h-full w-full will-change-transform">
               {isDesktop &&
-                (reducedMotion || simFallback ? (
+                (simFallback ? (
                   <HeroVideo
                     src="/sim-desktop.mp4"
                     poster="/sim-desktop-poster.jpg"
                     reducedMotion={reducedMotion}
                   />
                 ) : (
-                  <HeroSim ref={simRef} particles={400_000} onFallback={handleSimFallback} />
+                  <HeroSim
+                    ref={simRef}
+                    particles={400_000}
+                    startPaused={reducedMotion}
+                    onPausedChange={handleSimPausedChange}
+                    onFallback={handleSimFallback}
+                  />
                 ))}
             </div>
             <div className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-stone-50 to-transparent" />
@@ -252,19 +284,18 @@ export default function Hero() {
 
         {/* Live-simulation controls (desktop only, when the sim is running) */}
         {isDesktop &&
-          !reducedMotion &&
           !simFallback &&
           (simCardDismissed ? (
             <div className="absolute bottom-7 right-7 z-20 flex gap-2">
               <button
                 type="button"
                 onClick={toggleSimPaused}
-                title={simPaused ? "Resume the simulation" : "Pause the simulation"}
+                title={effectiveSimPaused ? "Resume the simulation" : "Pause the simulation"}
                 className="rounded-full border border-stone-200 bg-white/85 p-2 text-stone-500 shadow-sm transition-colors hover:text-accent"
               >
-                {simPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                {effectiveSimPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                 <span className="sr-only">
-                  {simPaused ? "Resume the simulation" : "Pause the simulation"}
+                  {effectiveSimPaused ? "Resume the simulation" : "Pause the simulation"}
                 </span>
               </button>
               <button
@@ -304,7 +335,7 @@ export default function Hero() {
                   onClick={toggleSimPaused}
                   className="flex items-center gap-1.5 text-xs font-medium text-stone-500 transition-colors hover:text-accent"
                 >
-                  {simPaused ? (
+                  {effectiveSimPaused ? (
                     <>
                       <Play className="h-3.5 w-3.5" /> Play
                     </>

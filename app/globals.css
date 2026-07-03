@@ -20,9 +20,14 @@ html {
   scroll-behavior: smooth;
 }
 
-html,
-body {
-  overscroll-behavior-y: none;
+/* Desktop only: iOS Safari has a long-standing bug where
+   overscroll-behavior: none on the root scroller can leave the page stuck
+   scrolled past the end of the document instead of bouncing back. */
+@media (min-width: 768px) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
 }
 
 body {

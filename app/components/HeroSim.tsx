@@ -75,20 +75,27 @@ function boxBlur(src: Float32Array, tmp: Float32Array, w: number, h: number, r: 
 
 export default function HeroSim({
   onFallback,
+  onPausedChange,
   orientation = "portrait",
   particles = DEFAULT_CONFIG.n,
+  startPaused = false,
   ref,
 }: {
   onFallback?: () => void;
+  /** notified when the sim un-pauses itself (first tap when startPaused) */
+  onPausedChange?: (paused: boolean) => void;
   /** portrait: v horizontal / x vertical (desktop column);
       landscape: x horizontal / v vertical, +v up (mobile band) */
   orientation?: "portrait" | "landscape";
   particles?: number;
+  /** mount frozen on the initial beams (reduced-motion); a tap starts it */
+  startPaused?: boolean;
   ref?: Ref<HeroSimHandle>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const resetRequested = useRef(false);
-  const pausedRef = useRef(false);
+  const pausedRef = useRef(startPaused);
+  const autoPausedRef = useRef(startPaused);
 
   useImperativeHandle(ref, () => ({
     reset: () => {
@@ -96,6 +103,7 @@ export default function HeroSim({
     },
     setPaused: (paused: boolean) => {
       pausedRef.current = paused;
+      autoPausedRef.current = false;
     },
   }));
 
@@ -338,6 +346,12 @@ export default function HeroSim({
     };
     const onDown = (e: PointerEvent) => {
       if (!readPointer(e)) return;
+      // startPaused (reduced-motion) mode: the first tap starts the sim
+      if (autoPausedRef.current) {
+        autoPausedRef.current = false;
+        pausedRef.current = false;
+        onPausedChange?.(false);
+      }
       pointerDown = true;
       kicks.push({ x0: pointerX0, dv: pointerU * KICK_DV, age: 0, total: KICK_RAMP_FRAMES });
       if (kicks.length > 16) kicks.shift();
@@ -360,7 +374,7 @@ export default function HeroSim({
       canvas.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, [onFallback, orientation, particles]);
+  }, [onFallback, onPausedChange, orientation, particles]);
 
   return (
     <canvas
