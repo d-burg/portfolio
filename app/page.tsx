@@ -53,6 +53,40 @@ function Publication({
   );
 }
 
+function ProjectCard({
+  title,
+  href,
+  badge,
+  children,
+}: {
+  title: string;
+  href: string;
+  badge: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="glass-section group rounded-lg border border-stone-200 p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
+      <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <h3 className="text-lg font-semibold text-stone-900 md:text-xl">
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-accent"
+          >
+            {title}
+            <ArrowUpRight className="ml-1 inline-block h-4 w-4 align-baseline text-stone-300 transition-colors group-hover:text-accent" />
+          </a>
+        </h3>
+        <span className="w-fit shrink-0 rounded border border-stone-200 bg-stone-100 px-2 py-1 font-mono text-xs text-stone-600">
+          {badge}
+        </span>
+      </div>
+      <p className="text-sm leading-relaxed text-stone-600 md:text-base">{children}</p>
+    </div>
+  );
+}
+
 function ResumeItem({
   title,
   subtitle,
@@ -112,6 +146,20 @@ export default function Portfolio() {
           <div className="space-y-10">
             <Reveal>
               <Publication
+                year="2026"
+                title="Tearing stability prediction combining toroidal calculations with a two-fluid slab layer"
+                href="https://iopscience.iop.org/article/10.1088/1361-6587/ae7156"
+                authors={
+                  <>
+                    <span className="font-bold text-stone-800">D.A. Burgess</span>, N.C.
+                    Logan, J.K. Park, C.J. Hansen, C. Paz-Soldan
+                  </>
+                }
+                venue="Plasma Physics and Controlled Fusion"
+              />
+            </Reveal>
+            <Reveal>
+              <Publication
                 year="2024"
                 title="TokaMaker: An open-source time-dependent Grad-Shafranov tool for the design and modeling of axisymmetric fusion devices"
                 href="https://www.sciencedirect.com/science/article/abs/pii/S0010465524000341"
@@ -147,32 +195,50 @@ export default function Portfolio() {
             <SectionHeading index="02 — Software" title="Select Projects" />
           </Reveal>
 
-          <Reveal>
-            <div className="glass-section group rounded-lg border border-stone-200 p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
-              <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <h3 className="text-lg font-semibold text-stone-900 md:text-xl">
-                  <a
-                    href="https://github.com/PrincetonUniversity/GPEC"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition-colors hover:text-accent"
-                  >
-                    GPEC (General Plasma Equilibrium Code)
-                    <ArrowUpRight className="ml-1 inline-block h-4 w-4 align-baseline text-stone-300 transition-colors group-hover:text-accent" />
-                  </a>
-                </h3>
-                <span className="w-fit rounded border border-stone-200 bg-stone-100 px-2 py-1 font-mono text-xs text-stone-600">
-                  Fortran
-                </span>
-              </div>
-              <p className="text-sm leading-relaxed text-stone-600 md:text-base">
+          <div className="space-y-6">
+            <Reveal>
+              <ProjectCard
+                title="Bouquet (Bootstrap Uncertainty Quantified Equilibrium Toolkit)"
+                href="https://github.com/d-burg/bouquet"
+                badge="Python"
+              >
+                Developed an open-source toolkit that generates families of
+                self-consistent perturbed tokamak equilibria for uncertainty
+                quantification. Correlated density and temperature perturbations are
+                drawn from Gaussian-process posteriors, each sample is solved through
+                TokaMaker&apos;s Grad–Shafranov solver, the electric current
+                distribution is iteratively recalculated, and the full ensemble is
+                archived to a user-friendly database.
+              </ProjectCard>
+            </Reveal>
+            <Reveal>
+              <ProjectCard
+                title="fusionsimulator.io"
+                href="https://fusionsimulator.io"
+                badge="Rust / TypeScript"
+              >
+                Built a real-time tokamak control-room simulator that runs entirely in
+                the browser: a Rust physics engine compiled to WebAssembly drives
+                power-balance transport, analytic Grad–Shafranov equilibria, and
+                ELM/disruption dynamics for DIII-D, JET, ITER, and a
+                negative-triangularity concept, with literature-standard scalings
+                (IPB98(y,2), Troyon, Greenwald, Eich) behind an interactive React
+                control room with shot planning and synthetic diagnostics.
+              </ProjectCard>
+            </Reveal>
+            <Reveal>
+              <ProjectCard
+                title="GPEC (General Plasma Equilibrium Code)"
+                href="https://github.com/PrincetonUniversity/GPEC"
+                badge="Fortran"
+              >
                 Redeveloped and expanded SLAYER to include updated physics and quadtree
-                adaptive mesh refinement (AMR) for robust calculation of both uncoupled and
-                coupled classical tearing mode growth rates. AMR approach achieved over 20x
-                speedup in root finding procedure.
-              </p>
-            </div>
-          </Reveal>
+                adaptive mesh refinement (AMR) for robust calculation of both uncoupled
+                and coupled classical tearing mode growth rates. AMR approach achieved
+                over 20x speedup in root finding procedure.
+              </ProjectCard>
+            </Reveal>
+          </div>
         </section>
 
         {/* RESUME */}
