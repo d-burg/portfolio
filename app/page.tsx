@@ -198,7 +198,7 @@ export default function Portfolio() {
           <div className="space-y-6">
             <Reveal>
               <ProjectCard
-                title="Bouquet (Bootstrap Uncertainty Quantified Equilibrium Toolkit)"
+                title="BOUQUET (BOotstrap Uncertainty QUantified Equilibrium Toolkit)"
                 href="https://github.com/d-burg/bouquet"
                 badge="Python"
               >
