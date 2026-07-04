@@ -151,6 +151,10 @@ export default function HeroSim({
     let parity = 0;
     let primed = false;
 
+    // Assigning canvas.width/height CLEARS the canvas. While paused nothing
+    // repaints, so a late resize (e.g. iOS viewport settling after load)
+    // would leave a blank canvas — repaint the current state after resizing.
+    let repaint: (() => void) | null = null;
     const sizeCanvas = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
       const w = Math.round(canvas.clientWidth * dpr);
@@ -158,6 +162,7 @@ export default function HeroSim({
       if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
         canvas.width = w;
         canvas.height = h;
+        repaint?.();
       }
     };
     const ro = new ResizeObserver(sizeCanvas);
@@ -325,8 +330,18 @@ export default function HeroSim({
       }
     };
     // paint the initial beams immediately, even if rAF is throttled
+    repaint = () => {
+      if (!stopped) drawFrame(false);
+    };
     drawFrame(false);
     raf = requestAnimationFrame(frame);
+
+    // iOS purges canvas backing stores in background tabs; restore the image
+    // on return (the running loop handles this itself when not paused)
+    const onVisible = () => {
+      if (!document.hidden && pausedRef.current) repaint?.();
+    };
+    document.addEventListener("visibilitychange", onVisible);
 
     // pointer interaction: a spatially-localized E-field pulse. The cursor's
     // velocity-axis coordinate sets the direction and strength; its
@@ -370,6 +385,7 @@ export default function HeroSim({
       stopped = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
+      document.removeEventListener("visibilitychange", onVisible);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
