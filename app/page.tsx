@@ -1,5 +1,8 @@
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { ArrowUpRight, MapPin } from "lucide-react";
+import bouquetPreview from "../public/previews/bouquet.jpg";
+import fusionPreview from "../public/previews/fusion.jpg";
+import gpecPreview from "../public/previews/gpec.jpg";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import Reveal from "./components/Reveal";
@@ -53,6 +56,14 @@ function Publication({
   );
 }
 
+// Preview drawer geometry: images render uncropped at a uniform height with
+// natural width W. On hover the image slides fully out to the card's left
+// (percentage transforms adapt to W) while the card slides right by
+// (W + gap) / 2 — computed per card below — so the composite re-centers on
+// the card's original axis.
+const PREVIEW_HEIGHT = 160; // px, uniform across cards
+const PREVIEW_GAP = 16; // px between image and card when out
+
 function ProjectCard({
   title,
   href,
@@ -63,28 +74,28 @@ function ProjectCard({
   title: string;
   href: string;
   badges: string[];
-  image?: string;
+  image?: StaticImageData;
   children: React.ReactNode;
 }) {
+  const cardShift = image
+    ? Math.round(((PREVIEW_HEIGHT * image.width) / image.height + PREVIEW_GAP) / 2)
+    : 0;
   return (
     // Stable outer wrapper owns hover/focus state, so the card sliding under
     // the cursor can't toggle its own hover and flicker.
-    <div className="group relative">
-      {/* Preview drawer: hidden beneath the card. On hover the image slides
-          left and the card slides right by the same 112px (half of image
-          width + gap), re-centering the composite on the card's original
-          axis. -z-10 paints the image behind the card background. */}
+    <div
+      className="group relative"
+      style={image ? ({ "--card-shift": `${cardShift}px` } as React.CSSProperties) : undefined}
+    >
       {image && (
-        <div
+        <Image
+          src={image}
+          alt=""
           aria-hidden
-          className="absolute inset-y-6 left-0 -z-10 hidden w-52 -translate-x-3 opacity-0 transition-all duration-500 ease-out group-focus-within:-translate-x-28 group-focus-within:opacity-100 group-hover:-translate-x-28 group-hover:opacity-100 lg:block"
-        >
-          <div className="relative h-full w-full overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
-            <Image src={image} alt="" fill sizes="208px" className="object-cover" />
-          </div>
-        </div>
+          className="absolute right-full top-1/2 -z-10 hidden h-40 w-auto -translate-y-1/2 translate-x-[calc(100%+12px)] rounded-lg border border-stone-200 bg-white opacity-0 shadow-lg transition-all duration-500 ease-out group-focus-within:translate-x-[calc(50%-8px)] group-focus-within:opacity-100 group-hover:translate-x-[calc(50%-8px)] group-hover:opacity-100 lg:block"
+        />
       )}
-      <div className="glass-section rounded-lg border border-stone-200 p-6 transition-all duration-500 ease-out group-hover:border-accent/40 group-hover:shadow-md md:p-8 lg:group-focus-within:translate-x-28 lg:group-hover:translate-x-28">
+      <div className="glass-section rounded-lg border border-stone-200 p-6 transition-all duration-500 ease-out group-hover:border-accent/40 group-hover:shadow-md md:p-8 lg:group-focus-within:translate-x-(--card-shift) lg:group-hover:translate-x-(--card-shift)">
       <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <h3 className="text-lg font-semibold text-stone-900 md:text-xl">
           <a
@@ -228,7 +239,7 @@ export default function Portfolio() {
                 title="BOUQUET (BOotstrap Uncertainty QUantified Equilibrium Toolkit)"
                 href="https://github.com/d-burg/bouquet"
                 badges={["Python"]}
-                image="/previews/bouquet.jpg"
+                image={bouquetPreview}
               >
                 Developed an open-source toolkit that generates families of
                 self-consistent perturbed tokamak equilibria for uncertainty
@@ -244,7 +255,7 @@ export default function Portfolio() {
                 title="fusionsimulator.io"
                 href="https://fusionsimulator.io"
                 badges={["Rust", "TypeScript", "Claude Code"]}
-                image="/previews/fusion.jpg"
+                image={fusionPreview}
               >
                 Built a real-time tokamak control-room simulator that runs entirely in
                 the browser: a Rust physics engine compiled to WebAssembly drives
@@ -260,7 +271,7 @@ export default function Portfolio() {
                 title="GPEC (General Plasma Equilibrium Code)"
                 href="https://github.com/PrincetonUniversity/GPEC"
                 badges={["Fortran", "Julia"]}
-                image="/previews/gpec.jpg"
+                image={gpecPreview}
               >
                 Redeveloped and expanded SLAYER to include updated physics and quadtree
                 adaptive mesh refinement (AMR) for robust calculation of both uncoupled
