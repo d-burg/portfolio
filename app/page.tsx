@@ -56,13 +56,13 @@ function Publication({
 function ProjectCard({
   title,
   href,
-  badge,
+  badges,
   image,
   children,
 }: {
   title: string;
   href: string;
-  badge: string;
+  badges: string[];
   image?: string;
   children: React.ReactNode;
 }) {
@@ -97,9 +97,16 @@ function ProjectCard({
             <ArrowUpRight className="ml-1 inline-block h-4 w-4 align-baseline text-stone-300 transition-colors group-hover:text-accent" />
           </a>
         </h3>
-        <span className="w-fit shrink-0 rounded border border-stone-200 bg-stone-100 px-2 py-1 font-mono text-xs text-stone-600">
-          {badge}
-        </span>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {badges.map((badge) => (
+            <span
+              key={badge}
+              className="w-fit rounded border border-stone-200 bg-stone-100 px-2 py-1 font-mono text-xs text-stone-600"
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
       </div>
         <p className="text-sm leading-relaxed text-stone-600 md:text-base">{children}</p>
       </div>
@@ -220,7 +227,7 @@ export default function Portfolio() {
               <ProjectCard
                 title="BOUQUET (BOotstrap Uncertainty QUantified Equilibrium Toolkit)"
                 href="https://github.com/d-burg/bouquet"
-                badge="Python"
+                badges={["Python"]}
                 image="/previews/bouquet.jpg"
               >
                 Developed an open-source toolkit that generates families of
@@ -236,7 +243,7 @@ export default function Portfolio() {
               <ProjectCard
                 title="fusionsimulator.io"
                 href="https://fusionsimulator.io"
-                badge="Rust / TypeScript"
+                badges={["Rust", "TypeScript", "Claude Code"]}
                 image="/previews/fusion.jpg"
               >
                 Built a real-time tokamak control-room simulator that runs entirely in
@@ -252,7 +259,7 @@ export default function Portfolio() {
               <ProjectCard
                 title="GPEC (General Plasma Equilibrium Code)"
                 href="https://github.com/PrincetonUniversity/GPEC"
-                badge="Fortran"
+                badges={["Fortran", "Julia"]}
                 image="/previews/gpec.jpg"
               >
                 Redeveloped and expanded SLAYER to include updated physics and quadtree
