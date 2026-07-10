@@ -57,15 +57,29 @@ function ProjectCard({
   title,
   href,
   badge,
+  image,
   children,
 }: {
   title: string;
   href: string;
   badge: string;
+  image?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="glass-section group rounded-lg border border-stone-200 p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
+    <div className="glass-section group relative rounded-lg border border-stone-200 p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
+      {/* Preview drawer: hidden beneath the card, slides out past the left
+          edge on hover/focus. -z-10 paints it behind the card background. */}
+      {image && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-6 left-0 -z-10 hidden w-52 -translate-x-3 opacity-0 transition-all duration-500 ease-out group-focus-within:-translate-x-[60%] group-focus-within:opacity-100 group-hover:-translate-x-[60%] group-hover:-rotate-2 group-hover:opacity-100 lg:block"
+        >
+          <div className="relative h-full w-full overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
+            <Image src={image} alt="" fill sizes="208px" className="object-cover" />
+          </div>
+        </div>
+      )}
       <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <h3 className="text-lg font-semibold text-stone-900 md:text-xl">
           <a
@@ -201,6 +215,7 @@ export default function Portfolio() {
                 title="BOUQUET (BOotstrap Uncertainty QUantified Equilibrium Toolkit)"
                 href="https://github.com/d-burg/bouquet"
                 badge="Python"
+                image="/previews/bouquet.jpg"
               >
                 Developed an open-source toolkit that generates families of
                 self-consistent perturbed tokamak equilibria for uncertainty
@@ -216,6 +231,7 @@ export default function Portfolio() {
                 title="fusionsimulator.io"
                 href="https://fusionsimulator.io"
                 badge="Rust / TypeScript"
+                image="/previews/fusion.jpg"
               >
                 Built a real-time tokamak control-room simulator that runs entirely in
                 the browser: a Rust physics engine compiled to WebAssembly drives
@@ -231,6 +247,7 @@ export default function Portfolio() {
                 title="GPEC (General Plasma Equilibrium Code)"
                 href="https://github.com/PrincetonUniversity/GPEC"
                 badge="Fortran"
+                image="/previews/gpec.jpg"
               >
                 Redeveloped and expanded SLAYER to include updated physics and quadtree
                 adaptive mesh refinement (AMR) for robust calculation of both uncoupled
