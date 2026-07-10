@@ -67,19 +67,24 @@ function ProjectCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="glass-section group relative rounded-lg border border-stone-200 p-6 transition-all hover:border-accent/40 hover:shadow-md md:p-8">
-      {/* Preview drawer: hidden beneath the card, slides out past the left
-          edge on hover/focus. -z-10 paints it behind the card background. */}
+    // Stable outer wrapper owns hover/focus state, so the card sliding under
+    // the cursor can't toggle its own hover and flicker.
+    <div className="group relative">
+      {/* Preview drawer: hidden beneath the card. On hover the image slides
+          left and the card slides right by the same 112px (half of image
+          width + gap), re-centering the composite on the card's original
+          axis. -z-10 paints the image behind the card background. */}
       {image && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-6 left-0 -z-10 hidden w-52 -translate-x-3 opacity-0 transition-all duration-500 ease-out group-focus-within:-translate-x-[60%] group-focus-within:opacity-100 group-hover:-translate-x-[60%] group-hover:-rotate-2 group-hover:opacity-100 lg:block"
+          className="absolute inset-y-6 left-0 -z-10 hidden w-52 -translate-x-3 opacity-0 transition-all duration-500 ease-out group-focus-within:-translate-x-28 group-focus-within:opacity-100 group-hover:-translate-x-28 group-hover:opacity-100 lg:block"
         >
           <div className="relative h-full w-full overflow-hidden rounded-lg border border-stone-200 bg-white shadow-lg">
             <Image src={image} alt="" fill sizes="208px" className="object-cover" />
           </div>
         </div>
       )}
+      <div className="glass-section rounded-lg border border-stone-200 p-6 transition-all duration-500 ease-out group-hover:border-accent/40 group-hover:shadow-md md:p-8 lg:group-focus-within:translate-x-28 lg:group-hover:translate-x-28">
       <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <h3 className="text-lg font-semibold text-stone-900 md:text-xl">
           <a
@@ -96,7 +101,8 @@ function ProjectCard({
           {badge}
         </span>
       </div>
-      <p className="text-sm leading-relaxed text-stone-600 md:text-base">{children}</p>
+        <p className="text-sm leading-relaxed text-stone-600 md:text-base">{children}</p>
+      </div>
     </div>
   );
 }
