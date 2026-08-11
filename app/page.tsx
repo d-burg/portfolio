@@ -357,7 +357,7 @@ export default function Portfolio() {
                       <div className="font-bold text-stone-800">APS-DPP</div>
                       <div className="mt-1 space-x-2 font-mono text-sm text-stone-500">
                         <a
-                          href="https://archive.aps.org/dpp/2025/go05/8/"
+                          href="https://meetings-archive.aps.org/dpp/2025/go05/8"
                           className="underline decoration-stone-300 transition-colors hover:text-accent hover:decoration-accent"
                           target="_blank"
                           rel="noopener noreferrer"
